@@ -13,6 +13,7 @@ arch=('x86_64')
 url='https://nginx.org'
 license=('custom')
 depends=('pcre2' 'zlib' 'openssl' 'geoip' 'mailcap' 'libxcrypt')
+makedepends=('cmake' 'git' 'mercurial')
 backup=('etc/nginx/fastcgi.conf'
         'etc/nginx/fastcgi_params'
         'etc/nginx/koi-win'
