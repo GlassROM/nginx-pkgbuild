@@ -23,26 +23,19 @@ backup=('etc/nginx/fastcgi.conf'
         'etc/nginx/win-utf'
         'etc/logrotate.d/nginx')
 install=nginx.install
-source=($url/download/nginx-$pkgver.tar.gz{,.asc}
-        service
-        logrotate)
-# https://nginx.org/en/pgp_keys.html
-validpgpkeys=(
-  'B0F4253373F8F6F510D42178520A9993A1C052F8' # Maxim Dounin <mdounin@mdounin.ru>
-  '13C82A63B603576156E30A4EA0EA981B66B0D967' # Konstantin Pavlov <thresh@nginx.com>
-)
-sha512sums=('da5f473ac213f8947f40f0a69820bf981157432fe9d29cf71fe30225dadd05f5814309034f0411ea15fb70bece8ceefc0cb0b2588096c1a9496c2a36fa425d9f'
-            'SKIP'
-            'be2858613d9cca85d80e7b894e9d5fa7892cbddd7a677d2d2f68f419d75fdc1f6802de8014f43ce063b116afd4ff17369873a6adea2dd58ac6f94e617de66fec'
-            '9232342c0914575ce438c5a8ee7e1c25b0befb457a2934e9cb77d1fe9a103634ea403b57bc0ef0cd6cf72248aee5e5584282cea611bc79198aeac9a65d8df5d7')
-b2sums=('5b8980f54e3f662ec6b4f8f0a50305c91081aaba881ef94f3c60e5fced8a79710ff09aae3abda3dce7dbcd460b1a46b1d3c0007d5dc76fbec5c4c2ad91ae7aa7'
-        'SKIP'
-        'b6414f9917fe62cc57556a2927fb404cc839398dac64a0d60c1d45af11a4e6be71bbee5f9bae17ce3604c31ab9247e8c6aec759f86890b54f86267db1fe7c08a'
-        'fe32fb75a7677abca86c4bc3f4ca9bfeccb3cd7afb4dd3c4ec21ab8b53cc0d72ba5330a1131498b5df222c2e517bd01e2df9f67256011ff15241b777a85be6b3')
+source=(hg+https://hg.nginx.org/nginx-quic
+    service
+    logrotate
+    git+https://boringssl.googlesource.com/boringssl.git
+    Enable_BoringSSL_OCSP.patch)
+sha512sums=('SKIP'
+    'be2858613d9cca85d80e7b894e9d5fa7892cbddd7a677d2d2f68f419d75fdc1f6802de8014f43ce063b116afd4ff17369873a6adea2dd58ac6f94e617de66fec'
+    '9232342c0914575ce438c5a8ee7e1c25b0befb457a2934e9cb77d1fe9a103634ea403b57bc0ef0cd6cf72248aee5e5584282cea611bc79198aeac9a65d8df5d7'
+    'SKIP'
+    'd512997f63d9a93c5b111c3a5a0dcd5ad57d378336de48667943fb814c1704a0155f220177fb6940d95342b11f017ad45ddfa5c0cde70c10947303d949ee9794')
 
 _common_flags=(
   --with-compat
-  --with-debug
   --with-file-aio
   --with-http_addition_module
   --with-http_auth_request_module
@@ -60,13 +53,14 @@ _common_flags=(
   --with-http_stub_status_module
   --with-http_sub_module
   --with-http_v2_module
+  --with-http-v3_module
   --with-mail
   --with-mail_ssl_module
-  --with-pcre-jit
   --with-stream
   --with-stream_geoip_module
   --with-stream_realip_module
   --with-stream_ssl_module
+  --with-stream_quic_module
   --with-stream_ssl_preread_module
   --with-threads
 )
@@ -75,32 +69,51 @@ _mainline_flags=(
 )
 
 prepare() {
-  cp -r $_pkgbase-$pkgver{,-src}
+    mv nginx-quic nginx-mainline
+    test -d ${srcdir}/${pkgname}-src && rm -r ${srcdir}/${pkgname}-src
+    cp -r ${srcdir}/${pkgname} ${srcdir}/${pkgname}-src
 }
 
 build() {
-  cd $_pkgbase-$pkgver
-  ./configure \
-    --prefix=/etc/nginx \
-    --conf-path=/etc/nginx/nginx.conf \
-    --sbin-path=/usr/bin/nginx \
-    --pid-path=/run/nginx.pid \
-    --lock-path=/run/lock/nginx.lock \
-    --user=http \
-    --group=http \
-    --http-log-path=/var/log/nginx/access.log \
-    --error-log-path=stderr \
-    --http-client-body-temp-path=/var/lib/nginx/client-body \
-    --http-proxy-temp-path=/var/lib/nginx/proxy \
-    --http-fastcgi-temp-path=/var/lib/nginx/fastcgi \
-    --http-scgi-temp-path=/var/lib/nginx/scgi \
-    --http-uwsgi-temp-path=/var/lib/nginx/uwsgi \
-    --with-cc-opt="$CFLAGS $CPPFLAGS" \
-    --with-ld-opt="$LDFLAGS" \
-    ${_common_flags[@]} \
-    ${_mainline_flags[@]}
+    export CXXFLAGS="$CXXFLAGS -fPIC"
+    export CFLAGS="$CFLAGS -fPIC"
 
-  make
+    # Disable some warnings that make Boringssl fail to compile due to a forced -Werror in CMakeLists.txt
+    # -Wno-array-bounds: 2022-05-21 for compatiblity with GCC 12.1 (https://bugs.chromium.org/p/boringssl/issues/detail?id=492&sort=-modified)
+    export CFLAGS="$CFLAGS -Wno-stringop-overflow -Wno-array-parameter -Wno-array-bounds -ftrivial-auto-var-init=zero"
+
+    cd ${srcdir}/boringssl
+    rm -rf .openssl
+    mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make crypto ssl
+    cd ${srcdir}/boringssl
+    mkdir -p .openssl/lib && cd .openssl && ln -s ../include . && cd ../
+    cp ${srcdir}/boringssl/build/crypto/libcrypto.a ${srcdir}/boringssl/build/ssl/libssl.a .openssl/lib && cd ..
+
+    cd $_pkgbase-$pkgver
+    patch -p1 < ../Enable_BoringSSL_OCSP.patch
+    ./configure \
+        --prefix=/etc/nginx \
+        --conf-path=/etc/nginx/nginx.conf \
+        --sbin-path=/usr/bin/nginx \
+        --pid-path=/run/nginx.pid \
+        --lock-path=/run/lock/nginx.lock \
+        --user=http \
+        --group=http \
+        --http-log-path=/var/log/nginx/access.log \
+        --error-log-path=stderr \
+        --http-client-body-temp-path=/var/lib/nginx/client-body \
+        --http-proxy-temp-path=/var/lib/nginx/proxy \
+        --http-fastcgi-temp-path=/var/lib/nginx/fastcgi \
+        --http-scgi-temp-path=/var/lib/nginx/scgi \
+        --http-uwsgi-temp-path=/var/lib/nginx/uwsgi \
+        --with-openssl=${srcdir}/boringssl \
+        --with-cc-opt="$CFLAGS $CPPFLAGS -I../boringssl/include -flto -fvisibility=hidden -fcf-protection -O3 -fstack-protector-all" \
+        --with-ld-opt="$LDFLAGS -L../boringssl/build/ssl -L../boringssl/build/crypto -flto -Wl,-O3" \
+        ${_common_flags[@]} \
+        ${_mainline_flags[@]}
+
+    touch ${srcdir}/boringssl/.openssl/include/openssl/ssl.h
+    make
 }
 
 package_nginx-mainline() {
