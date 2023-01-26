@@ -5,7 +5,7 @@
 
 _pkgbase=nginx
 pkgbase=nginx-mainline
-pkgname=(nginx-mainline nginx-mainline-src)
+pkgname=(nginx-mainline)
 pkgver=1.23.3
 pkgrel=1
 pkgdesc='Lightweight HTTP server and IMAP/POP3 proxy server, mainline release'
@@ -23,7 +23,7 @@ backup=('etc/nginx/fastcgi.conf'
         'etc/nginx/win-utf'
         'etc/logrotate.d/nginx')
 install=nginx.install
-source=(hg+https://hg.nginx.org/nginx-quic
+source=(hg+https://hg.nginx.org/nginx-quic#revision=a954b551dc3f
     service
     logrotate
     git+https://boringssl.googlesource.com/boringssl.git
@@ -53,7 +53,7 @@ _common_flags=(
   --with-http_stub_status_module
   --with-http_sub_module
   --with-http_v2_module
-  --with-http-v3_module
+  --with-http_v3_module
   --with-mail
   --with-mail_ssl_module
   --with-stream
@@ -69,7 +69,7 @@ _mainline_flags=(
 )
 
 prepare() {
-    mv nginx-quic nginx-mainline
+    ln -sf nginx-quic nginx-mainline
     test -d ${srcdir}/${pkgname}-src && rm -r ${srcdir}/${pkgname}-src
     cp -r ${srcdir}/${pkgname} ${srcdir}/${pkgname}-src
 }
@@ -87,11 +87,12 @@ build() {
     mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make crypto ssl
     cd ${srcdir}/boringssl
     mkdir -p .openssl/lib && cd .openssl && ln -s ../include . && cd ../
-    cp ${srcdir}/boringssl/build/crypto/libcrypto.a ${srcdir}/boringssl/build/ssl/libssl.a .openssl/lib && cd ..
+    cp ${srcdir}/boringssl/build/crypto/libcrypto.a ${srcdir}/boringssl/build/ssl/libssl.a .openssl/lib
+    cd ..
 
-    cd $_pkgbase-$pkgver
+    cd ${srcdir}/$pkgname
     patch -p1 < ../Enable_BoringSSL_OCSP.patch
-    ./configure \
+    ./auto/configure \
         --prefix=/etc/nginx \
         --conf-path=/etc/nginx/nginx.conf \
         --sbin-path=/usr/bin/nginx \
@@ -108,7 +109,7 @@ build() {
         --http-uwsgi-temp-path=/var/lib/nginx/uwsgi \
         --with-openssl=${srcdir}/boringssl \
         --with-cc-opt="$CFLAGS $CPPFLAGS -I../boringssl/include -flto -fvisibility=hidden -fcf-protection -O3 -fstack-protector-all" \
-        --with-ld-opt="$LDFLAGS -L../boringssl/build/ssl -L../boringssl/build/crypto -flto -Wl,-O3" \
+        --with-ld-opt="$LDFLAGS -L../boringssl/build/ssl -L../boringssl/build/crypto -flto -Wl,-O3 -Wl,-z,noexecstack -Wl,-z,now -Wl,-z,relro" \
         ${_common_flags[@]} \
         ${_mainline_flags[@]}
 
@@ -120,7 +121,7 @@ package_nginx-mainline() {
   provides=($_pkgbase)
   conflicts=($_pkgbase)
 
-  cd $_pkgbase-$pkgver
+  cd ${srcdir}/$pkgname
   make DESTDIR="$pkgdir" install
 
   sed -e 's|\<user\s\+\w\+;|user http;|g' \
@@ -142,23 +143,16 @@ package_nginx-mainline() {
 
   install -Dm644 ../logrotate "$pkgdir"/etc/logrotate.d/nginx
   install -Dm644 ../service "$pkgdir"/usr/lib/systemd/system/nginx.service
-  install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$_pkgbase/LICENSE
+  install -Dm644 docs/text/LICENSE "$pkgdir"/usr/share/licenses/$provides/LICENSE
+  install -d "$pkgdir"/usr/share/licenses/$pkgname
+  ln -s /usr/share/licenses/$provides/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 
   rmdir "$pkgdir"/run
 
   install -d "$pkgdir"/usr/share/man/man8/
-  gzip -9c man/nginx.8 > "$pkgdir"/usr/share/man/man8/nginx.8.gz
 
   for i in ftdetect ftplugin indent syntax; do
     install -Dm644 contrib/vim/$i/nginx.vim \
       "$pkgdir/usr/share/vim/vimfiles/$i/nginx.vim"
   done
-}
-
-package_nginx-mainline-src() {
-  pkgdesc="Source code of nginx-mainline $pkgver, useful for building modules"
-  conflicts=($_pkgbase-src)
-  depends=()
-  install -d "$pkgdir/usr/src"
-  cp -r $_pkgbase-$pkgver-src "$pkgdir/usr/src/nginx"
 }
