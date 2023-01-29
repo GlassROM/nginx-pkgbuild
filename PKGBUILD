@@ -18,8 +18,8 @@ pkgdesc='Lightweight HTTP server and IMAP/POP3 proxy server, mainline release'
 arch=('x86_64')
 url='https://nginx.org'
 license=('custom')
-depends=('mailcap')
-makedepends=('cmake' 'git' 'mercurial' 'go' 'libxcrypt-static=4.4.33-1')
+depends=('mailcap' 'libxcrypt')
+makedepends=('cmake' 'git' 'mercurial' 'go')
 backup=('etc/nginx/fastcgi.conf'
         'etc/nginx/fastcgi_params'
         'etc/nginx/koi-win'
