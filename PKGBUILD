@@ -30,7 +30,7 @@ backup=('etc/nginx/fastcgi.conf'
         'etc/nginx/win-utf'
         'etc/logrotate.d/nginx')
 install=nginx.install
-source=(hg+https://hg.nginx.org/nginx-quic#revision=a954b551dc3f
+source=(${pkgbase}::hg+https://hg.nginx.org/nginx-quic#revision=a954b551dc3f
     service
     logrotate
     git+https://boringssl.googlesource.com/boringssl.git
@@ -85,7 +85,6 @@ _mainline_flags=(
 )
 
 prepare() {
-    ln -sf nginx-quic nginx-mainline
     test -d ${srcdir}/${pkgname}-src && rm -r ${srcdir}/${pkgname}-src
     cp -r ${srcdir}/${pkgname} ${srcdir}/${pkgname}-src
 }
