@@ -36,7 +36,6 @@ sha512sums=('SKIP'
     'd512997f63d9a93c5b111c3a5a0dcd5ad57d378336de48667943fb814c1704a0155f220177fb6940d95342b11f017ad45ddfa5c0cde70c10947303d949ee9794')
 
 _common_flags=(
-  --with-compat
   --with-file-aio
   --with-http_addition_module
   --with-http_auth_request_module
