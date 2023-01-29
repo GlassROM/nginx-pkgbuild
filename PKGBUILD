@@ -18,7 +18,7 @@ pkgdesc='Lightweight HTTP server and IMAP/POP3 proxy server, mainline release'
 arch=('x86_64')
 url='https://nginx.org'
 license=('custom')
-depends=('mailcap' 'libxcrypt')
+depends=('mailcap' 'libxcrypt' 'hardened-malloc-git')
 makedepends=('cmake' 'git' 'mercurial' 'go')
 backup=('etc/nginx/fastcgi.conf'
         'etc/nginx/fastcgi_params'
@@ -131,7 +131,7 @@ build() {
 	--with-pcre=${srcdir}/$pcrepkgname-$pcrepkgver \
 	--with-zlib=${srcdir}/$zlibpkgname-$zlibpkgver \
         --with-cc-opt="$CFLAGS $CPPFLAGS -I../boringssl/include -flto -fvisibility=hidden -O3 -fstack-protector-all" \
-        --with-ld-opt="$LDFLAGS -L../boringssl/build/ssl -L../boringssl/build/crypto -lcrypto" \
+        --with-ld-opt="$LDFLAGS -L../boringssl/build/ssl -L../boringssl/build/crypto -lcrypto -lhardened_malloc" \
         ${_common_flags[@]} \
         ${_mainline_flags[@]}
 
