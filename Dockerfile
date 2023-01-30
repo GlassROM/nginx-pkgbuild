@@ -7,14 +7,25 @@ RUN set -x \
     && groupadd --system --gid 101 nginx \
     && useradd --system -g nginx -M --shell /bin/nologin --uid 101 nginx \
     && pacman -Syyuu --noconfirm \
-    && pacman -S --noconfirm base-devel
+    && pacman -S --noconfirm base-devel git
 
 RUN useradd user \
     && echo 'user ALL=(ALL) NOPASSWD:ALL' | tee -a /etc/sudoers
-COPY --chown=user:user . /home/user
+COPY --chown=user:user . /home/user/nginx
+
+RUN chown -R user:user /home/user
 
 USER user
+
 WORKDIR /home/user
+
+RUN git clone https://aur.archlinux.org/hardened-malloc-git.git
+
+WORKDIR /home/user/hardened-malloc-git
+    
+RUN makepkg -si --noconfirm
+
+WORKDIR /home/user/nginx
 
 RUN makepkg -si --noconfirm
 
