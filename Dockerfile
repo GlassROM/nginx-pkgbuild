@@ -22,7 +22,7 @@ WORKDIR /home/user
 RUN git clone https://aur.archlinux.org/hardened-malloc-git.git
 
 WORKDIR /home/user/hardened-malloc-git
-    
+
 RUN makepkg -si --noconfirm
 
 WORKDIR /home/user/nginx
@@ -31,7 +31,8 @@ RUN makepkg -si --noconfirm
 
 USER root
 WORKDIR /
-RUN pacman -Qdtq | pacman -Rs - --noconfirm \
+RUN pacman -Rcns base-devel git --noconfirm \
+    && pacman -Qdtq | pacman -Rs - --noconfirm \
     && pacman -Sc --noconfirm \
     && userdel user \
     && rm -rf /home/user \
