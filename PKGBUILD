@@ -5,7 +5,7 @@
 
 _pkgbase=nginx
 pkgbase=nginx-mainline
-pkgname=(nginx-mainline)
+pkgname=nginx-mainline
 pkgver=1.23.3
 pkgrel=1
 pcrepkgname=pcre2
@@ -30,7 +30,7 @@ backup=('etc/nginx/fastcgi.conf'
         'etc/nginx/win-utf'
         'etc/logrotate.d/nginx')
 install=nginx.install
-source=(${pkgbase}::hg+https://hg.nginx.org/nginx-quic#revision=a954b551dc3f
+source=(${pkgname}::hg+https://hg.nginx.org/nginx-quic#revision=def8e398d7c5
     service
     logrotate
     git+https://boringssl.googlesource.com/boringssl.git
