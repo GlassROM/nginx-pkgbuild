@@ -139,7 +139,7 @@ build() {
     make
 }
 
-package_nginx-mainline() {
+package() {
   provides=($_pkgbase)
   conflicts=($_pkgbase)
 
