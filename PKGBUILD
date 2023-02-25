@@ -108,7 +108,7 @@ build() {
 
     # Never LTO BoringSSL. Bad things will happen
     GRAPHITE="-fgraphite -fgraphite-identity -floop-interchange -ftree-loop-distribution -floop-strip-mine -floop-block -ftree-loop-linear"
-    export CFLAGS="$CFLAGS $GRAPHITE -flto -DTCP_FASTOPEN=23 -march=native -mtune=native"
+    export CFLAGS="$CFLAGS $GRAPHITE -flto -DTCP_FASTOPEN=23"
     export LDFLAGS="$LDFLAGS -flto"
 
     cd ${srcdir}/$pkgname
