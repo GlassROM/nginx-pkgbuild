@@ -30,7 +30,7 @@ backup=('etc/nginx/fastcgi.conf'
         'etc/nginx/win-utf'
         'etc/logrotate.d/nginx')
 install=nginx.install
-source=(${pkgname}::hg+https://hg.nginx.org/nginx-quic#revision=12b756caaf16
+source=(${pkgname}::hg+https://hg.nginx.org/nginx-quic#revision=639fa6723700
     service
     logrotate
     git+https://boringssl.googlesource.com/boringssl.git
