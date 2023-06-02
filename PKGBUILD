@@ -1,4 +1,6 @@
-# Maintainer:  Giancarlo Razzolini <grazzolini@archlinux.org>
+# Maintainer: Giancarlo Razzolini <grazzolini@archlinux.org>
+# Maintainer: T.J. Townsend <blakkheim@archlinux.org>
+# Maintainer: Massimiliano Torromeo <massimiliano.torromeo@gmail.com>
 # Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
 # Contributor: Sébastien Luttringer
 # Contributor: Drew DeVault
@@ -6,8 +8,8 @@
 _pkgbase=nginx
 pkgbase=nginx-mainline
 pkgname=nginx-mainline
-pkgver=1.23.3
-pkgrel=1
+pkgver=1.25.0
+pkgrel=2
 pcrepkgname=pcre2
 pcrepkgver=10.42
 pcrepkgrel=2
@@ -21,73 +23,79 @@ license=('custom')
 depends=('mailcap' 'libxcrypt' 'hardened-malloc-git')
 makedepends=('cmake' 'git' 'mercurial' 'go')
 backup=('etc/nginx/fastcgi.conf'
-        'etc/nginx/fastcgi_params'
-        'etc/nginx/koi-win'
-        'etc/nginx/koi-utf'
-        'etc/nginx/nginx.conf'
-        'etc/nginx/scgi_params'
-        'etc/nginx/uwsgi_params'
-        'etc/nginx/win-utf'
-        'etc/logrotate.d/nginx')
+    'etc/nginx/fastcgi_params'
+    'etc/nginx/koi-win'
+    'etc/nginx/koi-utf'
+    'etc/nginx/nginx.conf'
+    'etc/nginx/scgi_params'
+    'etc/nginx/uwsgi_params'
+    'etc/nginx/win-utf'
+    'etc/logrotate.d/nginx')
 install=nginx.install
-source=(${pkgname}::hg+https://hg.nginx.org/nginx-quic#revision=639fa6723700
+source=($url/download/nginx-$pkgver.tar.gz
     service
     logrotate
     git+https://boringssl.googlesource.com/boringssl.git
     Enable_BoringSSL_OCSP.patch
-https://github.com/PhilipHazel/pcre2/releases/download/$pcrepkgname-$pcrepkgver/$pcrepkgname-$pcrepkgver.tar.bz2
-https://zlib.net/${zlibpkgname}-${zlibpkgver}.tar.gz
+    https://github.com/PhilipHazel/pcre2/releases/download/$pcrepkgname-$pcrepkgver/$pcrepkgname-$pcrepkgver.tar.bz2
+    https://zlib.net/${zlibpkgname}-${zlibpkgver}.tar.gz
+    boringssl.patch
 )
-sha512sums=('SKIP'
+
+b2sums=('a472e9f3b6799eeb41756c11a7c6d32dbf9f64cb5d5083e1186ccb16e359086fa985f45b77b2d56e6b55bad433524fb79eda0728822f618ae409520cde981e47'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP')
+sha512sums=('828b83deacd9a250b36d894a126f070a9e48c0f057c931d8d5dbe80d3fe548eb3ab93fef2b6add564c2f567813f60c225d470292a6b5446dcb79eecc491ff2d8'
     'be2858613d9cca85d80e7b894e9d5fa7892cbddd7a677d2d2f68f419d75fdc1f6802de8014f43ce063b116afd4ff17369873a6adea2dd58ac6f94e617de66fec'
     '9232342c0914575ce438c5a8ee7e1c25b0befb457a2934e9cb77d1fe9a103634ea403b57bc0ef0cd6cf72248aee5e5584282cea611bc79198aeac9a65d8df5d7'
     'SKIP'
     'd512997f63d9a93c5b111c3a5a0dcd5ad57d378336de48667943fb814c1704a0155f220177fb6940d95342b11f017ad45ddfa5c0cde70c10947303d949ee9794'
-'72fbde87fecec3aa4b47225dd919ea1d55e97f2cbcf02aba26e5a0d3b1ffb58c25a80a9ef069eb99f9cf4e41ba9604ad06a7ec159870e1e875d86820e12256d3'
-'SKIP')
+    '72fbde87fecec3aa4b47225dd919ea1d55e97f2cbcf02aba26e5a0d3b1ffb58c25a80a9ef069eb99f9cf4e41ba9604ad06a7ec159870e1e875d86820e12256d3'
+    'SKIP'
+    '354d9f5e99ad5390effbb6283c282e3c4df68f6e3eb739738ad4700f081cfaf11a664440b1deb80fbf432e77fd9471c06220416f688fbf84deaa8ca4fd7941ad')
 sha256sums=('SKIP'
-	'SKIP'
-	'SKIP'
-	'SKIP'
-	'SKIP'
-	'SKIP'
-	'b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30')
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'SKIP'
+    'b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30'
+    'SKIP')
 
 _common_flags=(
-  --with-file-aio
-  --with-http_addition_module
-  --with-http_auth_request_module
-  --with-http_dav_module
-  --with-http_degradation_module
-  --with-http_flv_module
-  --with-http_gunzip_module
-  --with-http_gzip_static_module
-  --with-http_mp4_module
-  --with-http_realip_module
-  --with-http_secure_link_module
-  --with-http_slice_module
-  --with-http_ssl_module
-  --with-http_stub_status_module
-  --with-http_sub_module
-  --with-http_v2_module
-  --with-http_v3_module
-  --with-mail
-  --with-mail_ssl_module
-  --with-stream
-  --with-stream_realip_module
-  --with-stream_ssl_module
-  --with-stream_quic_module
-  --with-stream_ssl_preread_module
-  --with-threads
+    --with-file-aio
+    --with-http_addition_module
+    --with-http_auth_request_module
+    --with-http_dav_module
+    --with-http_degradation_module
+    --with-http_flv_module
+    --with-http_gunzip_module
+    --with-http_gzip_static_module
+    --with-http_mp4_module
+    --with-http_realip_module
+    --with-http_secure_link_module
+    --with-http_slice_module
+    --with-http_ssl_module
+    --with-http_stub_status_module
+    --with-http_sub_module
+    --with-http_v2_module
+    --with-http_v3_module
+    --with-mail
+    --with-mail_ssl_module
+    --with-stream
+    --with-stream_realip_module
+    --with-stream_ssl_module
+    --with-stream_ssl_preread_module
+    --with-threads
 )
 
 _mainline_flags=(
 )
-
-prepare() {
-    test -d ${srcdir}/${pkgname}-src && rm -r ${srcdir}/${pkgname}-src
-    cp -r ${srcdir}/${pkgname} ${srcdir}/${pkgname}-src
-}
 
 build() {
     export CXXFLAGS="$CXXFLAGS -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection"
@@ -95,7 +103,7 @@ build() {
 
     # Disable some warnings that make Boringssl fail to compile due to a forced -Werror in CMakeLists.txt
     # -Wno-array-bounds: 2022-05-21 for compatiblity with GCC 12.1 (https://bugs.chromium.org/p/boringssl/issues/detail?id=492&sort=-modified)
-    export CFLAGS="$CFLAGS -Wno-stringop-overflow -Wno-array-parameter -Wno-array-bounds -ftrivial-auto-var-init=zero -fcf-protection"
+    export CFLAGS="$CFLAGS -Wno-stringop-overflow -Wno-array-parameter -Wno-dangling-pointer -Wno-array-bounds -ftrivial-auto-var-init=zero -fcf-protection"
     export LDFLAGS="$LDFLAGS -Wl,-O3 -Wl,-z,noexecstack -Wl,-z,now -Wl,-z,relro -Wl,-O1,--as-needed,-z,defs,-z,relro,-z,now,-z,nodlopen,-z,text"
 
     cd ${srcdir}/boringssl
@@ -111,9 +119,10 @@ build() {
     export CFLAGS="$CFLAGS $GRAPHITE -flto -DTCP_FASTOPEN=23"
     export LDFLAGS="$LDFLAGS -flto"
 
-    cd ${srcdir}/$pkgname
-    patch -p1 < ../Enable_BoringSSL_OCSP.patch
-    ./auto/configure \
+    cd ${srcdir}/$_pkgbase-$pkgver
+    patch -p1 <../Enable_BoringSSL_OCSP.patch
+    patch -p1 <../boringssl.patch
+    ./configure \
         --prefix=/etc/nginx \
         --conf-path=/etc/nginx/nginx.conf \
         --sbin-path=/usr/bin/nginx \
@@ -129,9 +138,9 @@ build() {
         --http-scgi-temp-path=/var/lib/nginx/scgi \
         --http-uwsgi-temp-path=/var/lib/nginx/uwsgi \
         --with-openssl=${srcdir}/boringssl \
-	--with-pcre=${srcdir}/$pcrepkgname-$pcrepkgver \
-	--with-zlib=${srcdir}/$zlibpkgname-$zlibpkgver \
-        --with-cc-opt="$CFLAGS $CPPFLAGS -I../boringssl/include -flto -fvisibility=hidden -O3 -fstack-protector-all" \
+        --with-pcre=${srcdir}/$pcrepkgname-$pcrepkgver \
+        --with-zlib=${srcdir}/$zlibpkgname-$zlibpkgver \
+        --with-cc-opt="$CFLAGS $CPPFLAGS -I../boringssl/include -flto -fvisibility=hidden -O3 -fstack-protector-all -DGL_BORINGSSL_BUILD" \
         --with-ld-opt="$LDFLAGS -L../boringssl/build/ssl -L../boringssl/build/crypto -lcrypto -lhardened_malloc" \
         ${_common_flags[@]} \
         ${_mainline_flags[@]}
@@ -141,41 +150,40 @@ build() {
 }
 
 package() {
-  provides=($_pkgbase)
-  conflicts=($_pkgbase)
+    provides=($_pkgbase)
+    conflicts=($_pkgbase)
 
-  cd ${srcdir}/$pkgname
-  make DESTDIR="$pkgdir" install
+    cd ${srcdir}/$_pkgbase-$pkgver
+    make DESTDIR="$pkgdir" install
 
-  sed -e 's|\<user\s\+\w\+;|user http;|g' \
-    -e '44s|html|/usr/share/nginx/html|' \
-    -e '54s|html|/usr/share/nginx/html|' \
-    -i "$pkgdir"/etc/nginx/nginx.conf
+    sed -e 's|\<user\s\+\w\+;|user http;|g' \
+        -e '44s|html|/usr/share/nginx/html|' \
+        -e '54s|html|/usr/share/nginx/html|' \
+        -i "$pkgdir"/etc/nginx/nginx.conf
 
-  rm "$pkgdir"/etc/nginx/*.default
-  rm "$pkgdir"/etc/nginx/mime.types  # in mailcap
+    rm "$pkgdir"/etc/nginx/*.default
+    rm "$pkgdir"/etc/nginx/mime.types # in mailcap
 
-  install -d "$pkgdir"/var/lib/nginx
-  install -dm700 "$pkgdir"/var/lib/nginx/proxy
+    install -d "$pkgdir"/var/lib/nginx
+    install -dm700 "$pkgdir"/var/lib/nginx/proxy
 
-  chmod 755 "$pkgdir"/var/log/nginx
-  chown root:root "$pkgdir"/var/log/nginx
+    chmod 755 "$pkgdir"/var/log/nginx
+    chown root:root "$pkgdir"/var/log/nginx
 
-  install -d "$pkgdir"/usr/share/nginx
-  mv "$pkgdir"/etc/nginx/html/ "$pkgdir"/usr/share/nginx
+    install -d "$pkgdir"/usr/share/nginx
+    mv "$pkgdir"/etc/nginx/html/ "$pkgdir"/usr/share/nginx
 
-  install -Dm644 ../logrotate "$pkgdir"/etc/logrotate.d/nginx
-  install -Dm644 ../service "$pkgdir"/usr/lib/systemd/system/nginx.service
-  install -Dm644 docs/text/LICENSE "$pkgdir"/usr/share/licenses/$provides/LICENSE
-  install -d "$pkgdir"/usr/share/licenses/$pkgname
-  ln -s /usr/share/licenses/$provides/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+    install -Dm644 ../logrotate "$pkgdir"/etc/logrotate.d/nginx
+    install -Dm644 ../service "$pkgdir"/usr/lib/systemd/system/nginx.service
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$_pkgbase/LICENSE
 
-  rmdir "$pkgdir"/run
+    rmdir "$pkgdir"/run
 
-  install -d "$pkgdir"/usr/share/man/man8/
+    install -d "$pkgdir"/usr/share/man/man8/
+    gzip -9c man/nginx.8 >"$pkgdir"/usr/share/man/man8/nginx.8.gz
 
-  for i in ftdetect ftplugin indent syntax; do
-    install -Dm644 contrib/vim/$i/nginx.vim \
-      "$pkgdir/usr/share/vim/vimfiles/$i/nginx.vim"
-  done
+    for i in ftdetect ftplugin indent syntax; do
+        install -Dm644 contrib/vim/$i/nginx.vim \
+            "$pkgdir/usr/share/vim/vimfiles/$i/nginx.vim"
+    done
 }

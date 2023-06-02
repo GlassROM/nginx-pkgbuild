@@ -1,0 +1,14 @@
+diff --git a/src/event/quic/ngx_event_quic_openssl_compat.h b/src/event/quic/ngx_event_quic_openssl_compat.h
+index b04f6e0..7c90689 100644
+--- a/src/event/quic/ngx_event_quic_openssl_compat.h
++++ b/src/event/quic/ngx_event_quic_openssl_compat.h
+@@ -8,7 +8,8 @@
+ #define _NGX_EVENT_QUIC_OPENSSL_COMPAT_H_INCLUDED_
+ 
+ #if defined SSL_R_MISSING_QUIC_TRANSPORT_PARAMETERS_EXTENSION                 \
+-    || defined LIBRESSL_VERSION_NUMBER
++    || defined LIBRESSL_VERSION_NUMBER                                        \
++    || defined GL_BORINGSSL_BUILD
+ #undef NGX_QUIC_OPENSSL_COMPAT
+ #else
+ 
