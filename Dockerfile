@@ -9,11 +9,9 @@ RUN set -x \
     && pacman -Syyuu --noconfirm \
     && pacman -S --noconfirm base-devel git
 
-RUN useradd user \
+RUN useradd -m user \
     && echo 'user ALL=(ALL) NOPASSWD:ALL' | tee -a /etc/sudoers
 COPY --chown=user:user . /home/user/nginx
-
-RUN chown -R user:user /home/user
 
 USER user
 
@@ -36,10 +34,17 @@ RUN pacman -Rcns base-devel git --noconfirm \
     && pacman -Sc --noconfirm \
     && userdel user \
     && rm -rf /home/user \
-    && sed -i 's/user ALL=(ALL) NOPASSWD:ALL//' /etc/sudoers
+    && pacman -Rscndd sudo \
+    && rm -rf /etc/sudoers.pacsave
 
 EXPOSE 80/tcp 443/tcp 443/udp
 
 STOPSIGNAL SIGQUIT
+
+RUN chown -R 101:101 /var/log/nginx
+RUN chown -R 101:101 /var/lib/nginx
+RUN chown -R 101:101 /var/cache/nginx
+
+USER 101
 
 CMD ["nginx", "-g", "daemon off;"]
