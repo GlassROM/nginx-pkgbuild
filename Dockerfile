@@ -31,11 +31,12 @@ USER root
 WORKDIR /
 RUN pacman -Rcns base-devel git --noconfirm \
     && pacman -Qdtq | pacman -Rs - --noconfirm \
-    && pacman -Sc --noconfirm \
     && userdel user \
     && rm -rf /home/user \
     && pacman -Rscndd sudo \
     && rm -rf /etc/sudoers.pacsave
+
+RUN yes | pacman -Scc
 
 EXPOSE 80/tcp 443/tcp 443/udp
 
@@ -43,7 +44,9 @@ STOPSIGNAL SIGQUIT
 
 RUN chown -R 101:101 /var/log/nginx
 RUN chown -R 101:101 /var/lib/nginx
+RUN mkdir -p /var/cache/nginx
 RUN chown -R 101:101 /var/cache/nginx
+RUN chown -R 101:101 /etc/nginx
 
 USER 101
 
