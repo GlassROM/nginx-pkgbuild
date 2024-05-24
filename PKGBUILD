@@ -120,7 +120,7 @@ build() {
 
     # Disable some warnings that make Boringssl fail to compile due to a forced -Werror in CMakeLists.txt
     # -Wno-array-bounds: 2022-05-21 for compatiblity with GCC 12.1 (https://bugs.chromium.org/p/boringssl/issues/detail?id=492&sort=-modified)
-    export CFLAGS="$CFLAGS -Wno-stringop-overflow -Wno-array-parameter -Wno-dangling-pointer -Wno-array-bounds -ftrivial-auto-var-init=zero -fcf-protection -D_FORTIFY_SOURCE=3"
+    export CFLAGS="$CFLAGS -Wno-stringop-overflow -Wno-array-parameter -Wno-dangling-pointer -Wno-array-bounds -ftrivial-auto-var-init=zero -fcf-protection -fstack-protector-strong -D_FORTIFY_SOURCE=3"
     export LDFLAGS="$LDFLAGS -Wl,-O3 -Wl,-z,noexecstack -Wl,-pie -Wl,--strip-all -Wl,--sort-common -Wl,--no-undefined -Wl,-z,now -Wl,-z,relro -Wl,-O3,--as-needed,-z,defs,-z,relro,-z,now,-z,nodlopen,-z,text"
 
     cd ${srcdir}/boringssl
@@ -133,8 +133,8 @@ build() {
 
     # Never LTO BoringSSL. Bad things will happen
     GRAPHITE="-fgraphite -fgraphite-identity -floop-interchange -ftree-loop-distribution -floop-strip-mine -floop-block -ftree-loop-linear"
-    export CFLAGS="$CFLAGS $GRAPHITE -flto -DTCP_FASTOPEN=23"
-    export LDFLAGS="$LDFLAGS -flto"
+    export CFLAGS="$CFLAGS $GRAPHITE -flto -DTCP_FASTOPEN=23 -O3 -funroll-loops -fdata-sections -ffunction-sections"
+    export LDFLAGS="$LDFLAGS -flto -Wl,--gc-sections"
 
     cd ${srcdir}/$_pkgbase-$pkgver
     patch -p1 <../Enable_BoringSSL_OCSP.patch
@@ -157,7 +157,7 @@ build() {
         --with-openssl=${srcdir}/boringssl \
         --with-pcre=${srcdir}/$pcrepkgname-$pcrepkgver \
         --with-zlib=${srcdir}/$zlibpkgname-$zlibpkgver \
-        --with-cc-opt="$CFLAGS $CPPFLAGS -I../boringssl/include -flto -fvisibility=hidden -O3 -fstack-protector-all -DGL_BORINGSSL_BUILD" \
+        --with-cc-opt="$CFLAGS $CPPFLAGS -I../boringssl/include -flto -fvisibility=hidden -fstack-protector-all -DGL_BORINGSSL_BUILD" \
         --with-ld-opt="$LDFLAGS -L../boringssl/build/ssl -L../boringssl/build/crypto -lcrypto -lhardened_malloc -lstdc++" \
         "${_common_flags[@]}" \
         "${_mainline_flags[@]}"
