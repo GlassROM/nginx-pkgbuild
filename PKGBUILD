@@ -115,8 +115,8 @@ build() {
     # Fix thread-safety issue in sljit's allocator
     # [PATCH] Fix locking region in sjlit_malloc_exec
     patch -Np2 -i "$srcdir"/ad89dd8ecd25589d236bd20b36f2abf69f938fd1.patch -d src/sljit
-    export CXXFLAGS="$CXXFLAGS -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3"
-    export CFLAGS="$CFLAGS -fPIC"
+    export CXXFLAGS="$CXXFLAGS -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3"
+    export CFLAGS="$CFLAGS -fPIC -fomit-frame-pointer"
 
     if [[ -n "${USE_NATIVE}" ]]; then
         export CFLAGS="$CFLAGS -march=native -mtune=native"
