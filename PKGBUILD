@@ -118,6 +118,11 @@ build() {
     export CXXFLAGS="$CXXFLAGS -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3"
     export CFLAGS="$CFLAGS -fPIC"
 
+    if [[ -n "${USE_NATIVE}" ]]; then
+        export CFLAGS="$CFLAGS -march=native -mtune=native"
+        export CXXFLAGS="$CXXFLAGS -march=native -mtune=native"
+    fi
+
     # Disable some warnings that make Boringssl fail to compile due to a forced -Werror in CMakeLists.txt
     # -Wno-array-bounds: 2022-05-21 for compatiblity with GCC 12.1 (https://bugs.chromium.org/p/boringssl/issues/detail?id=492&sort=-modified)
     export CFLAGS="$CFLAGS -Wno-stringop-overflow -Wno-array-parameter -Wno-dangling-pointer -Wno-array-bounds -ftrivial-auto-var-init=zero -fcf-protection -fstack-protector-strong -D_FORTIFY_SOURCE=3"
