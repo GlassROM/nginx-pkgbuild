@@ -2,6 +2,8 @@ FROM archlinux:latest
 
 LABEL maintainer="Thien Tran contact@tommytran.io"
 
+COPY pacman.conf /etc/pacman.conf
+
 RUN set -x \
 # create nginx user/group first, to be consistent throughout docker variants
     && groupadd --system --gid 101 nginx \

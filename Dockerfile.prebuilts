@@ -1,17 +1,16 @@
-FROM archlinux:latest
+FROM tejctcznrtamwvvfecrocsnimmnxqgazpchlcgejjfghbwosrbgfbdkybmmy
 
 RUN set -x \
 # create nginx user/group first, to be consistent throughout docker variants
     && groupadd --system --gid 101 nginx \
     && useradd --system -g nginx -M --shell /bin/nologin --uid 101 nginx \
     && pacman -Syyuu --noconfirm \
-    && pacman -S --noconfirm nginx-mainline
 
 
 COPY hmalloc.pkg.tar /
 COPY nginx.tar.zst /
 
-RUN pacman -U --noconfirm /hmalloc.pkg.tar /nginx.tar.zst
+RUN pacman -U --noconfirm --overwrite $(cat /etc/ld.so.preload) /hmalloc.pkg.tar /nginx.tar.zst
 RUN rm /hmalloc.pkg.tar /nginx.tar.zst
 
 WORKDIR /
