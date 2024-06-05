@@ -4,7 +4,7 @@ RUN set -x \
 # create nginx user/group first, to be consistent throughout docker variants
     && groupadd --system --gid 101 nginx \
     && useradd --system -g nginx -M --shell /bin/nologin --uid 101 nginx \
-    && pacman -Syyuu --noconfirm \
+    && pacman -Syyuu --noconfirm
 
 
 COPY hmalloc.pkg.tar /
