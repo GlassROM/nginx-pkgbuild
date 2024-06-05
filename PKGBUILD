@@ -17,8 +17,8 @@
 _pkgbase=nginx
 pkgbase=nginx-mainline
 pkgname=nginx-mainline
-pkgver=1.25.5
-pkgrel=2
+pkgver=1.27.0
+pkgrel=1
 pcrepkgname=pcre2
 pcrepkgver=10.43
 pcrepkgrel=4
@@ -28,7 +28,7 @@ zlibpkgrel=2
 pkgdesc='Lightweight HTTP server and IMAP/POP3 proxy server, mainline release'
 arch=('x86_64')
 url='https://nginx.org'
-license=('custom')
+license=('BSD-2-Clause')
 depends=('mailcap' 'libxcrypt' 'hardened-malloc-git')
 makedepends=('cmake' 'git' 'mercurial' 'go')
 backup=('etc/nginx/fastcgi.conf'
@@ -53,7 +53,7 @@ source=($url/download/nginx-$pkgver.tar.gz
     https://github.com/zherczeg/sljit/commit/ad89dd8ecd25589d236bd20b36f2abf69f938fd1.patch
 )
 
-b2sums=('75ff068554d96063d1c7cb18d84df4fe8b820f6065f3464efde055c707e94ff13c45bea261619a453f04abed1fa3f9baccf81c29ca0e956ef0535e9a5c931dc6'
+b2sums=('035ec8d44f7f7df9b0c77e97e353a579642b75f905c1a6be5caf5ff952be9cae7ccc14c0bfce5ab148a11799d308225e9b7155458905b624c12acd09c03dfa44'
     'SKIP'
     'SKIP'
     'SKIP'
@@ -64,7 +64,7 @@ b2sums=('75ff068554d96063d1c7cb18d84df4fe8b820f6065f3464efde055c707e94ff13c45bea
     '736aa7eaa2ed571117f545ae78151fda6a5ef5935bf70f132b1d20d0ff6e46543194f409a02eac727a8209fb0d25e6870705e8a95b3feb07e799d288fd852822'
     '9ad1b0dca06cf3620158458e26c2007fb46990bdf178a75a621be5c665e8726990789510827829e9c480cbebee0b3b5da27f9857e3b19019307e4959671dfbac'
 )
-sha512sums=('4a069ec08af46e42a72e263291fc84a67605d817ece1ea7092a5da5babced96ef27eb370ad6f7558b2f5973406080240080aaf4b27fc2d8b41f6853601563cb7'
+sha512sums=('251bfe65c717a8027ef05caae2ab2ea73b9b544577f539a1d419fe6adf0bcc846b73b58f54ea3f102df79aaf340e4fa56793ddadea3cd61bcbbe2364ef94bacb'
     'ca7d8666177d31b6c4924e9ab44ddf3d5b596b51da04d38da002830b03bd176d49354bbdd2a496617d57f44111ad59833296af87d03ffe3fca6b99327a7b4c3c'
     '2f4dfcfa711b8bcbc5918ba635f5e430ef7132e66276261ade62bb1cba016967432c8dce7f84352cb8b07dc7c6b18f09177aa3eb92c8e358b2a106c8ca142fe9'
     'SKIP'
@@ -197,7 +197,7 @@ package() {
 
     install -Dm644 ../logrotate "$pkgdir"/etc/logrotate.d/nginx
     install -Dm644 ../service "$pkgdir"/usr/lib/systemd/system/nginx.service
-    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$_pkgbase/LICENSE
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 
     rmdir "$pkgdir"/run
 
