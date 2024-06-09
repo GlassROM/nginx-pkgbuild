@@ -20,8 +20,8 @@ pkgname=nginx-mainline
 pkgver=1.27.0
 pkgrel=1
 pcrepkgname=pcre2
-pcrepkgver=10.43
-pcrepkgrel=4
+pcrepkgver=10.44
+pcrepkgrel=1
 zlibpkgname=zlib
 zlibpkgver=1.3.1
 zlibpkgrel=2
@@ -49,8 +49,6 @@ source=($url/download/nginx-$pkgver.tar.gz
     https://github.com/PCRE2Project/pcre2/releases/download/$pcrepkgname-$pcrepkgver/$pcrepkgname-$pcrepkgver.tar.bz2
     https://github.com/madler/zlib/releases/download/v$zlibpkgver/$zlibpkgname-$zlibpkgver.tar.xz
     boringssl.patch
-    https://github.com/zherczeg/sljit/commit/56dbde07b05252f0b304b04040a86cfb9f109ae9.patch
-    https://github.com/zherczeg/sljit/commit/ad89dd8ecd25589d236bd20b36f2abf69f938fd1.patch
 )
 
 b2sums=('035ec8d44f7f7df9b0c77e97e353a579642b75f905c1a6be5caf5ff952be9cae7ccc14c0bfce5ab148a11799d308225e9b7155458905b624c12acd09c03dfa44'
@@ -58,22 +56,18 @@ b2sums=('035ec8d44f7f7df9b0c77e97e353a579642b75f905c1a6be5caf5ff952be9cae7ccc14c
     'SKIP'
     'SKIP'
     'SKIP'
-    'SKIP'
+    'fb06228f8bdc5906ef4f19d7d677f1009070855149d9ad3f807cfcd164f5cb6165f96e074fedc3942226d4b29edf4b29fab6cde2f2ba58bf6da282730941412b'
     '42d109223801a493de6d52e7343403d7fc3234a6ca816425fe41ac9c18019b01b93841acd28a235e99f2256a6a17f93624e96b2ddb58d588c8190a6bedb82910'
     'SKIP'
-    '736aa7eaa2ed571117f545ae78151fda6a5ef5935bf70f132b1d20d0ff6e46543194f409a02eac727a8209fb0d25e6870705e8a95b3feb07e799d288fd852822'
-    '9ad1b0dca06cf3620158458e26c2007fb46990bdf178a75a621be5c665e8726990789510827829e9c480cbebee0b3b5da27f9857e3b19019307e4959671dfbac'
 )
 sha512sums=('251bfe65c717a8027ef05caae2ab2ea73b9b544577f539a1d419fe6adf0bcc846b73b58f54ea3f102df79aaf340e4fa56793ddadea3cd61bcbbe2364ef94bacb'
     'ca7d8666177d31b6c4924e9ab44ddf3d5b596b51da04d38da002830b03bd176d49354bbdd2a496617d57f44111ad59833296af87d03ffe3fca6b99327a7b4c3c'
     '2f4dfcfa711b8bcbc5918ba635f5e430ef7132e66276261ade62bb1cba016967432c8dce7f84352cb8b07dc7c6b18f09177aa3eb92c8e358b2a106c8ca142fe9'
     'SKIP'
     'd512997f63d9a93c5b111c3a5a0dcd5ad57d378336de48667943fb814c1704a0155f220177fb6940d95342b11f017ad45ddfa5c0cde70c10947303d949ee9794'
-    '8ac1520c32e9e5672404aaf6104e23c9ee5c3c28ad28ff101435599d813cbb20e0491a3fd34e012b4411b3e0366a4c6dfa3f02d093acaa6ff0ab25478bb7ade9'
+    'ee91cc10a2962bc7818b03d368df3dd31f42ea9a7260ae51483ea8cd331b7431e36e63256b0adc213cc6d6741e7c90414fd420622308c0ae3fcb5dd878591be2'
     '1e8e70b362d64a233591906a1f50b59001db04ca14aaffad522198b04680be501736e7d536b4191e2f99767e7001ca486cd802362cca2be05d5d409b83ea732d'
     '354d9f5e99ad5390effbb6283c282e3c4df68f6e3eb739738ad4700f081cfaf11a664440b1deb80fbf432e77fd9471c06220416f688fbf84deaa8ca4fd7941ad'
-    '4379a06a142a9c9dc61298e86c722f1f2b6d83493acda8e472c866093b3e2192d315998c5a87dfd231739394d5c809c05415126084b18f80a002ee8861c0ed4f'
-    '9548da45cb030f53b634a9ba340687d04bd6c5b88ffd78932f231a4092e5cc99b0698941fbd4f88d9a905bed0d0a85c5da697da9a531c4c4efc8f7578d0ffefe'
 )
 
 _common_flags=(
@@ -107,14 +101,6 @@ _mainline_flags=(
 )
 
 build() {
-    cd ${srcdir}/$pcrepkgname-$pcrepkgver
-    # Fix AVX detection
-    # [PATCH] Add xgetbv feature detection support on x86
-    patch -Np2 -i "$srcdir"/56dbde07b05252f0b304b04040a86cfb9f109ae9.patch -d src/sljit
-
-    # Fix thread-safety issue in sljit's allocator
-    # [PATCH] Fix locking region in sjlit_malloc_exec
-    patch -Np2 -i "$srcdir"/ad89dd8ecd25589d236bd20b36f2abf69f938fd1.patch -d src/sljit
     export CXXFLAGS="$CXXFLAGS -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3 -fwrapv -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0"
     export CFLAGS="$CFLAGS -fPIC -fomit-frame-pointer -g0"
 
