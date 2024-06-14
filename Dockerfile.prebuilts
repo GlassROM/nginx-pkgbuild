@@ -1,10 +1,9 @@
-FROM tejctcznrtamwvvfecrocsnimmnxqgazpchlcgejjfghbwosrbgfbdkybmmy
+FROM ghcr.io/glassrom/os-image-docker:latest
 
 RUN set -x \
 # create nginx user/group first, to be consistent throughout docker variants
     && groupadd --system --gid 101 nginx \
-    && useradd --system -g nginx -M --shell /bin/nologin --uid 101 nginx \
-    && pacman -Syyuu --noconfirm
+    && useradd --system -g nginx -M --shell /bin/nologin --uid 101 nginx
 
 
 COPY hmalloc.pkg.tar /
@@ -29,4 +28,4 @@ RUN yes | pacman -Scc
 
 USER 101
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/seccomp-strict", "nginx", "-g", "daemon off;"]
