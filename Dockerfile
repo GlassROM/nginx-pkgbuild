@@ -1,15 +1,11 @@
-FROM archlinux:latest
+FROM ghcr.io/glassrom/os-image-docker:latest AS builder
 
-LABEL maintainer="Thien Tran contact@tommytran.io"
-
-COPY pacman.conf /etc/pacman.conf
+RUN pacman-key --init && pacman-key --populate archlinux
 
 RUN set -x \
-# create nginx user/group first, to be consistent throughout docker variants
-    && groupadd --system --gid 101 nginx \
-    && useradd --system -g nginx -M --shell /bin/nologin --uid 101 nginx \
-    && pacman -Syyuu --noconfirm \
-    && pacman -S --noconfirm base-devel git
+    && pacman -Syyuu --noconfirm base-devel git
+
+#LABEL maintainer=""
 
 RUN useradd -m user \
     && echo 'user ALL=(ALL) NOPASSWD:ALL' | tee -a /etc/sudoers
@@ -17,26 +13,26 @@ COPY --chown=user:user . /home/user/nginx
 
 USER user
 
-WORKDIR /home/user
-
-RUN git clone https://aur.archlinux.org/hardened-malloc-git.git
-
-WORKDIR /home/user/hardened-malloc-git
-
-RUN makepkg -si --noconfirm
-
 WORKDIR /home/user/nginx
 
-RUN makepkg -si --noconfirm
+RUN sed -i 's/..hardened-malloc-git.//' PKGBUILD
+ENV CROSS_COMPILE_FOR_AAK=true
+RUN makepkg -sf --noconfirm
+RUN rm *debug* && mv *.tar.zst nginx.tar.zst
 
-USER root
-WORKDIR /
-RUN pacman -Rcns base-devel git --noconfirm \
-    && pacman -Qdtq | pacman -Rs - --noconfirm \
-    && userdel user \
-    && rm -rf /home/user \
-    && pacman -Rscndd sudo \
-    && rm -rf /etc/sudoers.pacsave
+FROM ghcr.io/glassrom/os-image-docker:latest
+
+RUN pacman-key --init && pacman-key --populate archlinux
+
+# create nginx user/group first, to be consistent throughout docker variants
+RUN set -x \
+    && groupadd --system --gid 101 nginx \
+    && useradd --system -g nginx -M --shell /bin/nologin --uid 101 nginx
+
+COPY --from=builder /home/user/nginx/nginx.tar.zst /
+RUN pacman -U /nginx.tar.zst --noconfirm && rm /nginx.tar.zst
+
+RUN rm -rf /etc/pacman.d/gnupg
 
 RUN yes | pacman -Scc
 
@@ -52,4 +48,4 @@ RUN chown -R 101:101 /etc/nginx
 
 USER 101
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/seccomp-strict", "nginx", "-g", "daemon off;"]
