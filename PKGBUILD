@@ -101,7 +101,7 @@ _mainline_flags=(
 )
 
 build() {
-    export CXXFLAGS="$CXXFLAGS -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3 -fwrapv -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0"
+    export CXXFLAGS="$CXXFLAGS -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0"
     export CFLAGS="$CFLAGS -fPIC -fomit-frame-pointer -g0"
 
     if [[ -n "${USE_NATIVE}" ]]; then
@@ -116,7 +116,7 @@ build() {
 
     # Disable some warnings that make Boringssl fail to compile due to a forced -Werror in CMakeLists.txt
     # -Wno-array-bounds: 2022-05-21 for compatiblity with GCC 12.1 (https://bugs.chromium.org/p/boringssl/issues/detail?id=492&sort=-modified)
-    export CFLAGS="$CFLAGS -Wno-stringop-overflow -Wno-array-parameter -Wno-dangling-pointer -Wno-array-bounds -ftrivial-auto-var-init=zero -fcf-protection -fstack-protector-strong -D_FORTIFY_SOURCE=3 -fwrapv -fno-delete-null-pointer-checks"
+    export CFLAGS="$CFLAGS -Wno-stringop-overflow -Wno-array-parameter -Wno-dangling-pointer -Wno-array-bounds -ftrivial-auto-var-init=zero -fcf-protection -fstack-protector-strong -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks"
     export LDFLAGS="$LDFLAGS -Wl,-O3 -Wl,-z,noexecstack -Wl,-pie -Wl,--strip-all -Wl,--sort-common -Wl,--no-undefined -Wl,-z,now -Wl,-z,relro -Wl,-O3,--as-needed,-z,defs,-z,relro,-z,now,-z,nodlopen,-z,text"
 
     cd ${srcdir}/boringssl
