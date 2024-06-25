@@ -20,7 +20,7 @@ ENV CROSS_COMPILE_FOR_AAK=true
 RUN makepkg -sf --noconfirm
 RUN rm *debug* && mv *.tar.zst nginx.tar.zst
 
-FROM ghcr.io/glassrom/os-image-docker:latest
+FROM ghcr.io/glassrom/os-image-updater:master
 
 RUN pacman-key --init && pacman-key --populate archlinux
 
