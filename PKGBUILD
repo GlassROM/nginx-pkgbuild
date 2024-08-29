@@ -101,8 +101,8 @@ _mainline_flags=(
 )
 
 build() {
-    export CXXFLAGS="$CXXFLAGS -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fhardened -Wno-hardened -Wno-error=hardened"
-    export CFLAGS="$CFLAGS -fPIC -fomit-frame-pointer -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fhardened -Wno-hardened -Wno-error=hardened"
+    export CXXFLAGS="$CXXFLAGS -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fhardened -Wno-hardened -Wno-error=hardened -fvisibility=hidden"
+    export CFLAGS="$CFLAGS -fPIC -fomit-frame-pointer -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fhardened -Wno-hardened -Wno-error=hardened -fvisibility=hidden"
 
     if [[ -n "${USE_NATIVE}" ]]; then
         export CFLAGS="$CFLAGS -march=native -mtune=native"
@@ -118,7 +118,9 @@ build() {
     # Disable some warnings that make Boringssl fail to compile due to a forced -Werror in CMakeLists.txt
     # -Wno-array-bounds: 2022-05-21 for compatiblity with GCC 12.1 (https://bugs.chromium.org/p/boringssl/issues/detail?id=492&sort=-modified)
     export CFLAGBACKUP="$CFLAGS"
+    export CXXFLAGBACKUP="$CXXFLAGS"
     export CFLAGS="$CFLAGS -Wno-stringop-overflow -Wno-array-parameter -Wno-dangling-pointer -Wno-array-bounds -Wno-error=restrict"
+    export CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden"
     export LDFLAGS="$LDFLAGS -Wl,-O3 -Wl,-z,noexecstack -Wl,-pie -Wl,--strip-all -Wl,--sort-common -Wl,--no-undefined -Wl,-z,now -Wl,-z,relro -Wl,-O3,--as-needed,-z,defs,-z,relro,-z,now,-z,nodlopen,-z,text"
 
     cd ${srcdir}/boringssl
@@ -132,11 +134,13 @@ build() {
 
     cd ${srcdir}/$pcrepkgname-$pcrepkgver
     sed -i "1a CFLAGS=\"$CFLAGS\"" configure
+    sed -i "1a CXXFLAGS=\"$CXXFLAGS\"" configure
 
     # Never LTO BoringSSL. Bad things will happen
     GRAPHITE="-fgraphite -fgraphite-identity -floop-interchange -ftree-loop-distribution -floop-strip-mine -floop-block -ftree-loop-linear"
     export CFLAGS="$CFLAGS $GRAPHITE -flto -DTCP_FASTOPEN=23 -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3"
     export LDFLAGS="$LDFLAGS -flto -Wl,--gc-sections"
+    export CXXFLAGBACKUP="$CXXFLAGBACKUP $GRAPHITE"
 
     cd ${srcdir}/$_pkgbase-$pkgver
     patch -p1 <../Enable_BoringSSL_OCSP.patch
@@ -159,7 +163,7 @@ build() {
         --with-openssl=${srcdir}/boringssl \
         --with-pcre=${srcdir}/$pcrepkgname-$pcrepkgver \
         --with-zlib=${srcdir}/$zlibpkgname-$zlibpkgver \
-        --with-cc-opt="$CFLAGS $CPPFLAGS -I../boringssl/include -flto -fvisibility=hidden -fstack-protector-all -DGL_BORINGSSL_BUILD -Wall -Werror" \
+        --with-cc-opt="$CFLAGS $CPPFLAGS $CXXFLAGBACKUP -I../boringssl/include -flto -fstack-protector-all -DGL_BORINGSSL_BUILD -Wall -Werror" \
         --with-ld-opt="$LDFLAGS -L../boringssl/build/ssl -L../boringssl/build/crypto -lcrypto -lhardened_malloc -lstdc++" \
         "${_common_flags[@]}" \
         "${_mainline_flags[@]}"
