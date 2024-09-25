@@ -126,7 +126,7 @@ build() {
 
     cd ${srcdir}/boringssl
     rm -rf .openssl
-    mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make crypto ssl
+    mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make crypto ssl -j$(nproc --all)
     cd ${srcdir}/boringssl
     mkdir -p .openssl/lib && cd .openssl && ln -s ../include . && cd ../
     cp ${srcdir}/boringssl/build/crypto/libcrypto.a ${srcdir}/boringssl/build/ssl/libssl.a .openssl/lib
@@ -175,7 +175,7 @@ build() {
         "${_mainline_flags[@]}"
 
     touch ${srcdir}/boringssl/.openssl/include/openssl/ssl.h
-    make
+    make -j$(nproc --all)
 }
 
 package() {
