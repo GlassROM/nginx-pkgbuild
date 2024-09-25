@@ -168,7 +168,7 @@ build() {
         --with-openssl=${srcdir}/boringssl \
         --with-pcre=${srcdir}/$pcrepkgname-$pcrepkgver \
         --with-zlib=${srcdir}/$zlibpkgname-$zlibpkgver \
-        --with-cc-opt="$CFLAGS $CPPFLAGS $CXXFLAGBACKUP -I../boringssl/include -flto -fstack-protector-all -DGL_BORINGSSL_BUILD -Wall -Werror" \
+        --with-cc-opt="$CFLAGS $CXXFLAGBACKUP -I../boringssl/include -flto -fstack-protector-all -DGL_BORINGSSL_BUILD -Wall -Werror" \
         --with-ld-opt="$LDFLAGS -L../boringssl/build/ssl -L../boringssl/build/crypto -lcrypto -lhardened_malloc -lstdc++" \
         "${_common_flags[@]}" \
         "${_mainline_flags[@]}"
