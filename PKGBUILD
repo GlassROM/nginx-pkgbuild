@@ -41,6 +41,7 @@ backup=('etc/nginx/fastcgi.conf'
     'etc/nginx/win-utf'
     'etc/logrotate.d/nginx')
 install=nginx.install
+options=('strip' 'lto')
 source=($url/download/nginx-$pkgver.tar.gz
     service
     logrotate
