@@ -132,16 +132,17 @@ build() {
     cd ..
     export CFLAGS="$CFLAGBACKUP"
 
-    cd ${srcdir}/$pcrepkgname-$pcrepkgver
-    sed -i "1a CFLAGS=\"$CFLAGS\"" configure
-    sed -i "1a CXXFLAGS=\"$CXXFLAGS\"" configure
-
     # Never LTO BoringSSL. Bad things will happen
     GRAPHITE="-fgraphite -fgraphite-identity -floop-interchange -ftree-loop-distribution -floop-strip-mine -floop-block -ftree-loop-linear"
     export CFLAGS="$CFLAGS $GRAPHITE -flto -DTCP_FASTOPEN=23 -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3"
     export LDFLAGS="$LDFLAGS -flto -Wl,--gc-sections"
     export CXXFLAGS="$CXXFLAGS $GRAPHITE -flto -DTCP_FASTOPEN=23 -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3"
     export CPPFLAGS="$CPPFLAGS $CXXFLAGS $GRAPHITE"
+
+    cd ${srcdir}/$pcrepkgname-$pcrepkgver
+    sed -i "1a CFLAGS=\"$CFLAGS\"" configure
+    sed -i "1a CXXFLAGS=\"$CXXFLAGS\"" configure
+
 
     cd ${srcdir}/$_pkgbase-$pkgver
     patch -p1 <../Enable_BoringSSL_OCSP.patch
