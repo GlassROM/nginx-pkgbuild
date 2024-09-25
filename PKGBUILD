@@ -143,6 +143,9 @@ build() {
     sed -i "1a CFLAGS=\"$CFLAGS\"" configure
     sed -i "1a CXXFLAGS=\"$CXXFLAGS\"" configure
 
+    cd ${srcdir}/$zlibpkgname-$zlibpkgver
+    sed -i "1a CFLAGS=\"$CFLAGS\"" configure
+    sed -i "1a CXXFLAGS=\"$CXXFLAGS\"" configure
 
     cd ${srcdir}/$_pkgbase-$pkgver
     patch -p1 <../Enable_BoringSSL_OCSP.patch
