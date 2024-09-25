@@ -101,7 +101,6 @@ _mainline_flags=(
 )
 
 build() {
-	echo cd ${srcdir}/$_pkgbase-$pkgver '&& make install' > ${srcdir}/../fedora_helper.sh
     export CXXFLAGS="$CXXFLAGS -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fhardened -Wno-hardened -Wno-error=hardened -fvisibility=hidden"
     export CFLAGS="$CFLAGS -fPIC -fomit-frame-pointer -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fhardened -Wno-hardened -Wno-error=hardened -fvisibility=hidden"
 
