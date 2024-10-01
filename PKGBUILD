@@ -148,6 +148,8 @@ build() {
     sed -i "1a CFLAGS=\"$CFLAGS\"" configure
     sed -i "1a CXXFLAGS=\"$CXXFLAGS\"" configure
 
+    export CC="gcc $CFLAGS $CXXFLAGBACKUP"
+
     cd ${srcdir}/$_pkgbase-$pkgver
     patch -p1 <../Enable_BoringSSL_OCSP.patch
     patch -p1 <../boringssl.patch
