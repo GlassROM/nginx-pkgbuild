@@ -102,7 +102,7 @@ _mainline_flags=(
 )
 
 build() {
-    export MITIGATION_OPTS_X86="-fcf-protection=full -mcet-switch -mshstk -mindirect-branch=thunk-extern -mfunction-return=thunk-extern -mharden-sls=all -Wl,-lx86_return_thunk_gcc"
+    export MITIGATION_OPTS_X86="-fcf-protection=full -mcet-switch -mshstk -mindirect-branch=thunk-extern -mfunction-return=thunk-extern -mharden-sls=all"
     export CXXFLAGS="$CXXFLAGS -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fhardened -Wno-hardened -Wno-error=hardened -fvisibility=hidden $MITIGATION_OPTS_X86"
     export CFLAGS="$CFLAGS -fPIC -fomit-frame-pointer -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fhardened -Wno-hardened -Wno-error=hardened -fvisibility=hidden $MITIGATION_OPTS_X86"
 
@@ -123,7 +123,7 @@ build() {
     export CXXFLAGBACKUP="$CXXFLAGS"
     export CFLAGS="$CFLAGS -Wno-stringop-overflow -Wno-array-parameter -Wno-dangling-pointer -Wno-array-bounds -Wno-error=restrict"
     export CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden"
-    export LDFLAGS="$LDFLAGS -Wl,-O3 -Wl,-z,noexecstack -Wl,-pie -Wl,--strip-all -Wl,--sort-common -Wl,--no-undefined -Wl,-z,now -Wl,-z,relro -Wl,-O3,--as-needed,-z,defs,-z,relro,-z,now,-z,nodlopen,-z,text -Wl,-lx86_return_thunk_clang"
+    export LDFLAGS="$LDFLAGS -Wl,-O3 -Wl,-z,noexecstack -Wl,-pie -Wl,--strip-all -Wl,--sort-common -Wl,--no-undefined -Wl,-z,now -Wl,-z,relro -Wl,-O3,--as-needed,-z,defs,-z,relro,-z,now,-z,nodlopen,-z,text"
 
     cd ${srcdir}/boringssl
     rm -rf .openssl
