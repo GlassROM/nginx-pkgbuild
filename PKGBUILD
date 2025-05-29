@@ -20,7 +20,7 @@ pkgname=nginx-mainline
 pkgver=1.27.3
 pkgrel=1
 pcrepkgname=pcre2
-pcrepkgver=10.44
+pcrepkgver=10.45
 pcrepkgrel=1
 zlibpkgname=zlib
 zlibpkgver=1.3.1
@@ -47,7 +47,7 @@ source=($url/download/nginx-$pkgver.tar.gz
     logrotate
     git+https://boringssl.googlesource.com/boringssl.git
     Enable_BoringSSL_OCSP.patch
-    https://github.com/PCRE2Project/pcre2/releases/download/$pcrepkgname-$pcrepkgver/$pcrepkgname-$pcrepkgver.tar.bz2
+    $pcrepkgname-$pcrepkgver::git+https://github.com/PCRE2Project/pcre2.git?signed#tag=$pcrepkgname-$pcrepkgver
     https://github.com/madler/zlib/releases/download/v$zlibpkgver/$zlibpkgname-$zlibpkgver.tar.xz
     boringssl.patch
 )
@@ -57,7 +57,7 @@ b2sums=('283f90d9c935650085e028f6cb41bf2db6a04ea6e8f50b9b0b3f157326ee370f503fa84
     'SKIP'
     'SKIP'
     'SKIP'
-    'fb06228f8bdc5906ef4f19d7d677f1009070855149d9ad3f807cfcd164f5cb6165f96e074fedc3942226d4b29edf4b29fab6cde2f2ba58bf6da282730941412b'
+    '196dfcbf6f096b91cb2b72cd1eab53e42a72435f27224fb02fb846f52939d2ae44f1d3ef6d59c024919be9dc00774e13e1bf3c82bec2acb1ac1cf64d66a721cc'
     '42d109223801a493de6d52e7343403d7fc3234a6ca816425fe41ac9c18019b01b93841acd28a235e99f2256a6a17f93624e96b2ddb58d588c8190a6bedb82910'
     'SKIP'
 )
@@ -66,7 +66,7 @@ sha512sums=('5536d41ead0da71b6593cb361fd3da79707362919e6b6e71ec64816b5c2205903af
     '2f4dfcfa711b8bcbc5918ba635f5e430ef7132e66276261ade62bb1cba016967432c8dce7f84352cb8b07dc7c6b18f09177aa3eb92c8e358b2a106c8ca142fe9'
     'SKIP'
     'd512997f63d9a93c5b111c3a5a0dcd5ad57d378336de48667943fb814c1704a0155f220177fb6940d95342b11f017ad45ddfa5c0cde70c10947303d949ee9794'
-    'ee91cc10a2962bc7818b03d368df3dd31f42ea9a7260ae51483ea8cd331b7431e36e63256b0adc213cc6d6741e7c90414fd420622308c0ae3fcb5dd878591be2'
+    '02e1b9972c00e3eae7d07ddf0519f19b5291c979fa316453d24fea41adce3e3213f484049091df448765b799b66556901c24a6238fd48a1eef79614319a1c68e'
     '1e8e70b362d64a233591906a1f50b59001db04ca14aaffad522198b04680be501736e7d536b4191e2f99767e7001ca486cd802362cca2be05d5d409b83ea732d'
     '354d9f5e99ad5390effbb6283c282e3c4df68f6e3eb739738ad4700f081cfaf11a664440b1deb80fbf432e77fd9471c06220416f688fbf84deaa8ca4fd7941ad'
 )
