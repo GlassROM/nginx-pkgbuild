@@ -129,7 +129,7 @@ build() {
     mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make crypto ssl -j$(nproc --all)
     cd ${srcdir}/boringssl
     mkdir -p .openssl/lib && cd .openssl && ln -s ../include . && cd ../
-    cp ${srcdir}/boringssl/build/crypto/libcrypto.a ${srcdir}/boringssl/build/ssl/libssl.a .openssl/lib
+    cp ${srcdir}/boringssl/build/libcrypto.a ${srcdir}/boringssl/build/libssl.a .openssl/lib
     cd ..
     export CFLAGS="$CFLAGBACKUP"
 
