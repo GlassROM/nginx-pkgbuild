@@ -17,7 +17,7 @@ WORKDIR /home/user/nginx
 
 RUN sed -i 's/..hardened-malloc-git.//' PKGBUILD
 ENV CROSS_COMPILE_FOR_AAK=true
-RUN makepkg -sf --noconfirm
+RUN makepkg -sf --noconfirm --skippgpcheck
 RUN rm *debug* && mv *.tar.zst nginx.tar.zst
 
 FROM ghcr.io/glassrom/os-image-updater:master
