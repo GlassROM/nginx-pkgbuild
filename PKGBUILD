@@ -42,14 +42,13 @@ backup=('etc/nginx/fastcgi.conf'
     'etc/logrotate.d/nginx')
 install=nginx.install
 options=('strip' 'lto')
-source=("git+https://github.com/nginx/nginx.git#tag=release-${pkgver}"
+source=(${_pkgbase}-${pkgver}::"git+https://github.com/nginx/nginx.git#tag=release-${pkgver}"
     service
     logrotate
     git+https://boringssl.googlesource.com/boringssl.git
     Enable_BoringSSL_OCSP.patch
-    $pcrepkgname-$pcrepkgver::git+https://github.com/PCRE2Project/pcre2.git?signed#tag=$pcrepkgname-$pcrepkgver
-    https://github.com/madler/zlib/releases/download/v$zlibpkgver/$zlibpkgname-$zlibpkgver.tar.xz
-    boringssl.patch
+    ${pcrepkgname}-${pcrepkgver}::"git+https://github.com/PCRE2Project/pcre2.git?signed#tag=${pcrepkgname}-${pcrepkgver}"
+    https://github.com/madler/zlib/releases/download/v${zlibpkgver}/${zlibpkgname}-${zlibpkgver}.tar.xz
 )
 
 b2sums=('SKIP'
@@ -59,7 +58,6 @@ b2sums=('SKIP'
     'SKIP'
     '196dfcbf6f096b91cb2b72cd1eab53e42a72435f27224fb02fb846f52939d2ae44f1d3ef6d59c024919be9dc00774e13e1bf3c82bec2acb1ac1cf64d66a721cc'
     '42d109223801a493de6d52e7343403d7fc3234a6ca816425fe41ac9c18019b01b93841acd28a235e99f2256a6a17f93624e96b2ddb58d588c8190a6bedb82910'
-    'SKIP'
 )
 sha512sums=('97d07f0e6477bbeb2959e9cdd9136e2ed6e6386902c3579ff82a452df88241b628441e6bfa7c14cc40bd6137fb47eb66b001d156bd801a60f7866f9c3098aa1d'
     '3217aff86052d8ed66884aa0b36ff5b874996d5ef5875e2de8f1a9a1d224ad96cd336582a6b667e124e0fc0fcf3d14c00e40090310d620237c6f2818f9147323'
@@ -68,7 +66,6 @@ sha512sums=('97d07f0e6477bbeb2959e9cdd9136e2ed6e6386902c3579ff82a452df88241b6284
     'd512997f63d9a93c5b111c3a5a0dcd5ad57d378336de48667943fb814c1704a0155f220177fb6940d95342b11f017ad45ddfa5c0cde70c10947303d949ee9794'
     '02e1b9972c00e3eae7d07ddf0519f19b5291c979fa316453d24fea41adce3e3213f484049091df448765b799b66556901c24a6238fd48a1eef79614319a1c68e'
     '1e8e70b362d64a233591906a1f50b59001db04ca14aaffad522198b04680be501736e7d536b4191e2f99767e7001ca486cd802362cca2be05d5d409b83ea732d'
-    '354d9f5e99ad5390effbb6283c282e3c4df68f6e3eb739738ad4700f081cfaf11a664440b1deb80fbf432e77fd9471c06220416f688fbf84deaa8ca4fd7941ad'
 )
 
 _common_flags=(
@@ -157,20 +154,19 @@ build() {
     export CXXFLAGS="$CXXFLAGS $POLLY -flto -DTCP_FASTOPEN=23 -fsanitize=cfi,safe-stack -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3 -fPIE -pie"
     export CPPFLAGS="$CPPFLAGS $CXXFLAGS $POLLY"
 
-    cd ${srcdir}/$pcrepkgname-$pcrepkgver
+    cd ${srcdir}/${pcrepkgname}-${pcrepkgver}
     sed -i "1a CFLAGS=\"$CFLAGS\"" configure
     sed -i "1a CXXFLAGS=\"$CXXFLAGS\"" configure
 
-    cd ${srcdir}/$zlibpkgname-$zlibpkgver
+    cd ${srcdir}/${zlibpkgname}-${zlibpkgver}
     sed -i "1a CFLAGS=\"$CFLAGS\"" configure
     sed -i "1a CXXFLAGS=\"$CXXFLAGS\"" configure
 
     export CC="$CC $CFLAGS $CXXFLAGBACKUP"
 
-    cd ${srcdir}/$_pkgbase-$pkgver
-    patch -p1 <../Enable_BoringSSL_OCSP.patch
-    patch -p1 <../boringssl.patch
-    ./configure \
+    cd ${srcdir}/${_pkgbase}-${pkgver}
+    patch -p1 <${srcdir}/Enable_BoringSSL_OCSP.patch
+    ./auto/configure \
         --prefix=/etc/nginx \
         --conf-path=/etc/nginx/nginx.conf \
         --sbin-path=/usr/bin/nginx \
@@ -186,8 +182,8 @@ build() {
         --http-scgi-temp-path=/var/lib/nginx/scgi \
         --http-uwsgi-temp-path=/var/lib/nginx/uwsgi \
         --with-openssl=${srcdir}/boringssl \
-        --with-pcre=${srcdir}/$pcrepkgname-$pcrepkgver \
-        --with-zlib=${srcdir}/$zlibpkgname-$zlibpkgver \
+        --with-pcre=${srcdir}/${pcrepkgname}-${pcrepkgver} \
+        --with-zlib=${srcdir}/${zlibpkgname}-${zlibpkgver} \
         --with-cc-opt="$CFLAGS $CXXFLAGBACKUP -I../boringssl/include -flto -DGL_BORINGSSL_BUILD -Wall -Werror" \
         --with-ld-opt="$LDFLAGS -L../boringssl/build -Wl,-rpath,'/../lib/boringssl' -l:libssl.so -l:libcrypto.so -lcrypt -lhardened_malloc -lstdc++" \
         "${_common_flags[@]}" \
