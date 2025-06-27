@@ -110,8 +110,8 @@ build() {
     export OBJCOPY=llvm-objcopy
     export READELF=llvm-readelf
 
-    export CXXFLAGS="$CXXFLAGS -fno-plt -fuse-ld=lld -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fvisibility=hidden -fsanitize=bounds,object-size,unreachable,return,shift,vla-bound -fsanitize-trap=all -fstack-protector-all -fstack-clash-protection"
-    export CFLAGS="$CFLAGS -fno-plt -fuse-ld=lld -fPIC -fomit-frame-pointer -g0 -fPIC -fno-strict-overflow -fno-strict-aliasing -fvisibility=hidden -fsanitize=bounds,object-size,unreachable,shift,vla-bound -fsanitize-trap=all"
+    export CXXFLAGS="$CXXFLAGS -fno-plt -fuse-ld=lld -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fvisibility=hidden -fsanitize=unreachable,return,shift,vla-bound -fsanitize-trap=all -fstack-protector-all -fstack-clash-protection"
+    export CFLAGS="$CFLAGS -fno-plt -fuse-ld=lld -fPIC -fomit-frame-pointer -g0 -fPIC -fno-strict-overflow -fno-strict-aliasing -fvisibility=hidden -fsanitize-trap=all"
 
     if [[ -n "${USE_NATIVE}" ]]; then
         export CFLAGS="$CFLAGS -march=native -mtune=native"
