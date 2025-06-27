@@ -48,4 +48,5 @@ RUN chown -R 101:101 /etc/nginx
 
 USER 101
 
+ENV LD_PRELOAD=/usr/lib/boringssl/libssl.so:/usr/lib/boringssl/libcrypto.so
 CMD ["/seccomp-strict", "nginx", "-g", "daemon off;"]

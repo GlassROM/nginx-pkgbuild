@@ -17,7 +17,7 @@
 _pkgbase=nginx
 pkgbase=nginx-mainline
 pkgname=nginx-mainline
-pkgver=1.27.3
+pkgver=1.29.0
 pkgrel=1
 pcrepkgname=pcre2
 pcrepkgver=10.45
@@ -30,7 +30,7 @@ arch=('x86_64')
 url='https://nginx.org'
 license=('BSD-2-Clause')
 depends=('mailcap' 'libxcrypt' 'hardened-malloc-git')
-makedepends=('cmake' 'git' 'mercurial' 'go')
+makedepends=('clang' 'cmake' 'git' 'lld' 'llvm' 'mercurial' 'go' 'polly')
 backup=('etc/nginx/fastcgi.conf'
     'etc/nginx/fastcgi_params'
     'etc/nginx/koi-win'
@@ -42,7 +42,7 @@ backup=('etc/nginx/fastcgi.conf'
     'etc/logrotate.d/nginx')
 install=nginx.install
 options=('strip' 'lto')
-source=($url/download/nginx-$pkgver.tar.gz
+source=("git+https://github.com/nginx/nginx.git#tag=release-${pkgver}"
     service
     logrotate
     git+https://boringssl.googlesource.com/boringssl.git
@@ -52,7 +52,7 @@ source=($url/download/nginx-$pkgver.tar.gz
     boringssl.patch
 )
 
-b2sums=('283f90d9c935650085e028f6cb41bf2db6a04ea6e8f50b9b0b3f157326ee370f503fa84aeef1230b3501432a9e64be5462065ec6877024bb8f49376643959e54'
+b2sums=('SKIP'
     'SKIP'
     'SKIP'
     'SKIP'
@@ -61,8 +61,8 @@ b2sums=('283f90d9c935650085e028f6cb41bf2db6a04ea6e8f50b9b0b3f157326ee370f503fa84
     '42d109223801a493de6d52e7343403d7fc3234a6ca816425fe41ac9c18019b01b93841acd28a235e99f2256a6a17f93624e96b2ddb58d588c8190a6bedb82910'
     'SKIP'
 )
-sha512sums=('5536d41ead0da71b6593cb361fd3da79707362919e6b6e71ec64816b5c2205903af0cd151796c942b32dfca0f8e8e3ffd9dcb3acf993144342ca671330b1a0dc'
-    'ca7d8666177d31b6c4924e9ab44ddf3d5b596b51da04d38da002830b03bd176d49354bbdd2a496617d57f44111ad59833296af87d03ffe3fca6b99327a7b4c3c'
+sha512sums=('97d07f0e6477bbeb2959e9cdd9136e2ed6e6386902c3579ff82a452df88241b628441e6bfa7c14cc40bd6137fb47eb66b001d156bd801a60f7866f9c3098aa1d'
+    '3217aff86052d8ed66884aa0b36ff5b874996d5ef5875e2de8f1a9a1d224ad96cd336582a6b667e124e0fc0fcf3d14c00e40090310d620237c6f2818f9147323'
     '2f4dfcfa711b8bcbc5918ba635f5e430ef7132e66276261ade62bb1cba016967432c8dce7f84352cb8b07dc7c6b18f09177aa3eb92c8e358b2a106c8ca142fe9'
     'SKIP'
     'd512997f63d9a93c5b111c3a5a0dcd5ad57d378336de48667943fb814c1704a0155f220177fb6940d95342b11f017ad45ddfa5c0cde70c10947303d949ee9794'
@@ -102,43 +102,60 @@ _mainline_flags=(
 )
 
 build() {
-    export CXXFLAGS="$CXXFLAGS -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -mcet-switch -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fhardened -Wno-hardened -Wno-error=hardened -fvisibility=hidden"
-    export CFLAGS="$CFLAGS -fPIC -fomit-frame-pointer -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fhardened -Wno-hardened -Wno-error=hardened -fvisibility=hidden"
+    export CC=clang
+    export CXX=clang++
+    export LD=clang           # clang drives lld automatically with -fuse-ld=lld
+    export AR=llvm-ar
+    export NM=llvm-nm
+    export RANLIB=llvm-ranlib
+    export STRIP=llvm-strip
+    export OBJDUMP=llvm-objdump
+    export OBJCOPY=llvm-objcopy
+    export READELF=llvm-readelf
+
+    export CXXFLAGS="$CXXFLAGS -fno-plt -fuse-ld=lld -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fvisibility=hidden -fsanitize=bounds,object-size,unreachable,return,shift,vla-bound -fsanitize-trap=all -fstack-protector-all -fstack-clash-protection"
+    export CFLAGS="$CFLAGS -fno-plt -fuse-ld=lld -fPIC -fomit-frame-pointer -g0 -fPIC -fno-strict-overflow -fno-strict-aliasing -fvisibility=hidden -fsanitize=bounds,object-size,unreachable,shift,vla-bound -fsanitize-trap=all"
 
     if [[ -n "${USE_NATIVE}" ]]; then
         export CFLAGS="$CFLAGS -march=native -mtune=native"
         export CXXFLAGS="$CXXFLAGS -march=native -mtune=native"
     fi
 
-    if [[ -n "${CROSS_COMPILE_FOR_AAK}" ]]; then
+    if [[ -n "${CROSS_COMPILE_FOR_AAK1}" ]]; then
         export CFLAGS="$CFLAGS -fcf-protection=full -march=alderlake -mmmx -mpopcnt -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mavx -mavx2 -mno-sse4a -mno-fma4 -mno-xop -mfma -mno-avx512f -mbmi -mbmi2 -maes -mpclmul -mno-avx512vl -mno-avx512bw -mno-avx512dq -mno-avx512cd -mno-avx512vbmi -mno-avx512ifma -mno-avx512vpopcntdq -mno-avx512vbmi2 -mgfni -mvpclmulqdq -mno-avx512vnni -mno-avx512bitalg -mno-avx512bf16 -mno-avx512vp2intersect -mno-3dnow -madx -mabm -mno-cldemote -mclflushopt -mclwb -mno-clzero -mcx16 -mno-enqcmd -mf16c -mfsgsbase -mfxsr -mno-hle -msahf -mno-lwp -mlzcnt -mmovbe -mmovdir64b -mmovdiri -mno-mwaitx -mno-pconfig -mno-pku -mprfchw -mno-ptwrite -mrdpid -mrdrnd -mrdseed -mno-rtm -mserialize -mno-sgx -msha -mshstk -mno-tbm -mno-tsxldtrk -mvaes -mwaitpkg -mno-wbnoinvd -mxsave -mxsavec -mxsaveopt -mxsaves -mno-amx-tile -mno-amx-int8 -mno-amx-bf16 -mno-uintr -mno-hreset -mno-kl -mno-widekl -mavxvnni -mno-avx512fp16 -mno-avxifma -mno-avxvnniint8 -mno-avxneconvert -mno-cmpccxadd -mno-amx-fp16 -mno-prefetchi -mno-raoint -mno-amx-complex -mno-avxvnniint16 -mno-sm3 -mno-sha512 -mno-sm4 -mno-apxf -mno-usermsr --param l1-cache-size=48 --param l1-cache-line-size=64 --param l2-cache-size=30720 -mtune=alderlake"
         export CXXFLAGS="$CXXFLAGS -fcf-protection=full -march=alderlake -mmmx -mpopcnt -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mavx -mavx2 -mno-sse4a -mno-fma4 -mno-xop -mfma -mno-avx512f -mbmi -mbmi2 -maes -mpclmul -mno-avx512vl -mno-avx512bw -mno-avx512dq -mno-avx512cd -mno-avx512vbmi -mno-avx512ifma -mno-avx512vpopcntdq -mno-avx512vbmi2 -mgfni -mvpclmulqdq -mno-avx512vnni -mno-avx512bitalg -mno-avx512bf16 -mno-avx512vp2intersect -mno-3dnow -madx -mabm -mno-cldemote -mclflushopt -mclwb -mno-clzero -mcx16 -mno-enqcmd -mf16c -mfsgsbase -mfxsr -mno-hle -msahf -mno-lwp -mlzcnt -mmovbe -mmovdir64b -mmovdiri -mno-mwaitx -mno-pconfig -mno-pku -mprfchw -mno-ptwrite -mrdpid -mrdrnd -mrdseed -mno-rtm -mserialize -mno-sgx -msha -mshstk -mno-tbm -mno-tsxldtrk -mvaes -mwaitpkg -mno-wbnoinvd -mxsave -mxsavec -mxsaveopt -mxsaves -mno-amx-tile -mno-amx-int8 -mno-amx-bf16 -mno-uintr -mno-hreset -mno-kl -mno-widekl -mavxvnni -mno-avx512fp16 -mno-avxifma -mno-avxvnniint8 -mno-avxneconvert -mno-cmpccxadd -mno-amx-fp16 -mno-prefetchi -mno-raoint -mno-amx-complex -mno-avxvnniint16 -mno-sm3 -mno-sha512 -mno-sm4 -mno-apxf -mno-usermsr --param l1-cache-size=48 --param l1-cache-line-size=64 --param l2-cache-size=30720 -mtune=alderlake"
     fi
 
-    export CFLAGS="$CFLAGS -ftrivial-auto-var-init=zero -fcf-protection -mcet-switch -fstack-protector-strong -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks"
+    export CFLAGS="$CFLAGS -ftrivial-auto-var-init=zero -fcf-protection=full -fstack-protector-all -fstack-clash-protection -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks"
     # Disable some warnings that make Boringssl fail to compile due to a forced -Werror in CMakeLists.txt
     # -Wno-array-bounds: 2022-05-21 for compatiblity with GCC 12.1 (https://bugs.chromium.org/p/boringssl/issues/detail?id=492&sort=-modified)
+    export CFLAGS="$CFLAGS -Wno-unused-command-line-argument -Wno-error=unused-command-line-argument"
+    export CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden -Wno-unused-command-line-argument -Wno-error=unused-command-line-argument"
     export CFLAGBACKUP="$CFLAGS"
     export CXXFLAGBACKUP="$CXXFLAGS"
-    export CFLAGS="$CFLAGS -Wno-stringop-overflow -Wno-array-parameter -Wno-dangling-pointer -Wno-array-bounds -Wno-error=restrict"
-    export CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden"
-    export LDFLAGS="$LDFLAGS -Wl,-O3 -Wl,-z,noexecstack -Wl,-pie -Wl,--strip-all -Wl,--sort-common -Wl,--no-undefined -Wl,-z,now -Wl,-z,relro -Wl,-O3,--as-needed,-z,defs,-z,relro,-z,now,-z,nodlopen,-z,text"
+    export LDFLAGS="$LDFLAGS -Wl,-O3 -Wl,-z,noexecstack -Wl,--strip-all -Wl,--sort-common -Wl,--no-undefined -Wl,-z,now -Wl,-z,relro -Wl,-O3,--as-needed,-z,defs,-z,relro,-z,now,-z,nodlopen,-z,text"
 
     cd ${srcdir}/boringssl
     rm -rf .openssl
-    mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make crypto ssl -j$(nproc --all)
+    mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=1 ../ && make crypto ssl -j$(nproc --all)
     cd ${srcdir}/boringssl
     mkdir -p .openssl/lib && cd .openssl && ln -s ../include . && cd ../
-    cp ${srcdir}/boringssl/build/libcrypto.a ${srcdir}/boringssl/build/libssl.a .openssl/lib
+    cp ${srcdir}/boringssl/build/libcrypto.so ${srcdir}/boringssl/build/libssl.so .openssl/lib
+    # --------------------------------------------------------------------
+    # create thin wrapper archives so nginx thinks it is linking *.a,
+    # but the linker actually pulls in the shared libraries
+    echo 'INPUT(-l:libcrypto.so)' > .openssl/lib/libcrypto.a
+    echo 'INPUT(-l:libssl.so)'    > .openssl/lib/libssl.a
+    # --------------------------------------------------------------------
     cd ..
     export CFLAGS="$CFLAGBACKUP"
 
     # Never LTO BoringSSL. Bad things will happen
-    GRAPHITE="-fgraphite -fgraphite-identity -floop-interchange -ftree-loop-distribution -floop-strip-mine -floop-block -ftree-loop-linear"
-    export CFLAGS="$CFLAGS $GRAPHITE -flto -DTCP_FASTOPEN=23 -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3"
-    export LDFLAGS="$LDFLAGS -flto -Wl,--gc-sections"
-    export CXXFLAGS="$CXXFLAGS $GRAPHITE -flto -DTCP_FASTOPEN=23 -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3"
-    export CPPFLAGS="$CPPFLAGS $CXXFLAGS $GRAPHITE"
+    POLLY="-Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-run-dce -mllvm -polly-run-inliner -mllvm -polly-ast-use-context -mllvm -polly-vectorizer=stripmine -mllvm -polly-invariant-load-hoisting"
+    export CFLAGS="$CFLAGS $POLLY -flto -fsanitize=cfi,safe-stack -DTCP_FASTOPEN=23 -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3 -fPIE -pie"
+    export LDFLAGS="$LDFLAGS -flto -Wl,--gc-sections -Wl,-pie"
+    export CXXFLAGS="$CXXFLAGS $POLLY -flto -DTCP_FASTOPEN=23 -fsanitize=cfi,safe-stack -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3 -fPIE -pie"
+    export CPPFLAGS="$CPPFLAGS $CXXFLAGS $POLLY"
 
     cd ${srcdir}/$pcrepkgname-$pcrepkgver
     sed -i "1a CFLAGS=\"$CFLAGS\"" configure
@@ -148,7 +165,7 @@ build() {
     sed -i "1a CFLAGS=\"$CFLAGS\"" configure
     sed -i "1a CXXFLAGS=\"$CXXFLAGS\"" configure
 
-    export CC="gcc $CFLAGS $CXXFLAGBACKUP"
+    export CC="$CC $CFLAGS $CXXFLAGBACKUP"
 
     cd ${srcdir}/$_pkgbase-$pkgver
     patch -p1 <../Enable_BoringSSL_OCSP.patch
@@ -171,8 +188,8 @@ build() {
         --with-openssl=${srcdir}/boringssl \
         --with-pcre=${srcdir}/$pcrepkgname-$pcrepkgver \
         --with-zlib=${srcdir}/$zlibpkgname-$zlibpkgver \
-        --with-cc-opt="$CFLAGS $CXXFLAGBACKUP -I../boringssl/include -flto -fstack-protector-all -DGL_BORINGSSL_BUILD -Wall -Werror" \
-        --with-ld-opt="$LDFLAGS -L../boringssl/build/ssl -L../boringssl/build/crypto -lcrypto -lhardened_malloc -lstdc++" \
+        --with-cc-opt="$CFLAGS $CXXFLAGBACKUP -I../boringssl/include -flto -DGL_BORINGSSL_BUILD -Wall -Werror" \
+        --with-ld-opt="$LDFLAGS -L../boringssl/build -Wl,-rpath,'/../lib/boringssl' -l:libssl.so -l:libcrypto.so -lcrypt -lhardened_malloc -lstdc++" \
         "${_common_flags[@]}" \
         "${_mainline_flags[@]}"
 
@@ -183,6 +200,11 @@ build() {
 package() {
     provides=($_pkgbase)
     conflicts=($_pkgbase)
+
+    install -Dm755 "${srcdir}/boringssl/build/libcrypto.so" \
+               "$pkgdir/usr/lib/boringssl/libcrypto.so"
+    install -Dm755 "${srcdir}/boringssl/build/libssl.so" \
+               "$pkgdir/usr/lib/boringssl/libssl.so"
 
     cd ${srcdir}/$_pkgbase-$pkgver
     make DESTDIR="$pkgdir" install

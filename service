@@ -17,5 +17,7 @@ KillMode=mixed
 KillSignal=SIGQUIT
 TimeoutStopSec=5
 
+Environment="LD_PRELOAD=/usr/lib/boringssl/libssl.so:/usr/lib/boringssl/libcrypto.so"
+
 [Install]
 WantedBy=multi-user.target
