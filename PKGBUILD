@@ -131,6 +131,8 @@ build() {
     export CFLAGBACKUP="$CFLAGS"
     export CXXFLAGBACKUP="$CXXFLAGS"
     export LDFLAGS="$LDFLAGS -Wl,-O3 -Wl,-z,noexecstack -Wl,--strip-all -Wl,--sort-common -Wl,--no-undefined -Wl,-z,now -Wl,-z,relro -Wl,-O3,--as-needed,-z,defs,-z,relro,-z,now,-z,nodlopen,-z,text"
+    export CFLAGS="$CFLAGS -fsanitize=undefined,bounds"
+    export CXXFLAGS="$CXXFLAGS -fsanitize=undefined,bounds"
 
     cd ${srcdir}/boringssl
     rm -rf .openssl
@@ -146,21 +148,22 @@ build() {
     # --------------------------------------------------------------------
     cd ..
     export CFLAGS="$CFLAGBACKUP"
+    export CXXFLAGS="$CXXFLAGBACKUP"
 
     # Never LTO BoringSSL. Bad things will happen
     POLLY="-Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-run-dce -mllvm -polly-run-inliner -mllvm -polly-ast-use-context -mllvm -polly-vectorizer=stripmine -mllvm -polly-invariant-load-hoisting"
-    export CFLAGS="$CFLAGS $POLLY -flto -fsanitize=cfi,safe-stack -DTCP_FASTOPEN=23 -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3 -fPIE -pie"
+    export CFLAGS="$CFLAGS $POLLY -flto -fsanitize=safe-stack -DTCP_FASTOPEN=23 -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3 -fPIE -pie"
     export LDFLAGS="$LDFLAGS -flto -Wl,--gc-sections -Wl,-pie"
-    export CXXFLAGS="$CXXFLAGS $POLLY -flto -DTCP_FASTOPEN=23 -fsanitize=cfi,safe-stack -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3 -fPIE -pie"
+    export CXXFLAGS="$CXXFLAGS $POLLY -flto -DTCP_FASTOPEN=23 -fsanitize=safe-stack -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3 -fPIE -pie"
     export CPPFLAGS="$CPPFLAGS $CXXFLAGS $POLLY"
 
     cd ${srcdir}/${pcrepkgname}-${pcrepkgver}
-    sed -i "1a CFLAGS=\"$CFLAGS\"" configure
-    sed -i "1a CXXFLAGS=\"$CXXFLAGS\"" configure
+    sed -i "1a CFLAGS=\"$CFLAGS -fsanitize=undefined,bounds\"" configure
+    sed -i "1a CXXFLAGS=\"$CXXFLAGS -fsanitize=undefined,bounds\"" configure
 
     cd ${srcdir}/${zlibpkgname}-${zlibpkgver}
-    sed -i "1a CFLAGS=\"$CFLAGS\"" configure
-    sed -i "1a CXXFLAGS=\"$CXXFLAGS\"" configure
+    sed -i "1a CFLAGS=\"$CFLAGS -fsanitize=undefined,bounds\"" configure
+    sed -i "1a CXXFLAGS=\"$CXXFLAGS -fsanitize=undefined,bounds\"" configure
 
     export CC="$CC $CFLAGS $CXXFLAGBACKUP"
 
