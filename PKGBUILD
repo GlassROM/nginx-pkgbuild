@@ -101,7 +101,7 @@ _mainline_flags=(
 build() {
     export CC=clang
     export CXX=clang++
-    export LD=clang           # clang drives lld automatically with -fuse-ld=lld
+    export LD=ld.lld
     export AR=llvm-ar
     export NM=llvm-nm
     export RANLIB=llvm-ranlib
@@ -110,8 +110,8 @@ build() {
     export OBJCOPY=llvm-objcopy
     export READELF=llvm-readelf
 
-    export CXXFLAGS="$CXXFLAGS -fno-plt -fuse-ld=lld -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fvisibility=hidden -fsanitize-trap=all -fstack-protector-all -fstack-clash-protection"
-    export CFLAGS="$CFLAGS -fno-plt -fuse-ld=lld -fPIC -fomit-frame-pointer -g0 -fPIC -fno-strict-overflow -fno-strict-aliasing -fvisibility=hidden -fsanitize-trap=all"
+    export CXXFLAGS="$CXXFLAGS -fno-plt -fuse-ld=lld -fomit-frame-pointer -fPIC -ftrivial-auto-var-init=zero -flto -fcf-protection -D_FORTIFY_SOURCE=3 -fwrapv -fzero-call-used-regs=all -fno-delete-null-pointer-checks -D_GLIBCXX_ASSERTIONS -g0 -fPIE -pie -fPIC -fno-strict-overflow -fno-strict-aliasing -fvisibility=hidden -fsanitize=cfi-cast-strict,cfi-derived-cast,cfi-unrelated-cast -fsanitize-cfi-icall-generalize-pointers -fsanitize-cfi-icall-experimental-normalize-integers -fsanitize-trap=all -fstack-protector-all -fstack-clash-protection"
+    export CFLAGS="$CFLAGS -fno-plt -fuse-ld=lld -fPIC -fomit-frame-pointer -g0 -fPIC -fno-strict-overflow -fno-strict-aliasing -fvisibility=hidden -fsanitize=cfi-cast-strict,cfi-derived-cast,cfi-unrelated-cast -fsanitize-cfi-icall-generalize-pointers -fsanitize-cfi-icall-experimental-normalize-integers -fsanitize-trap=all"
 
     if [[ -n "${USE_NATIVE}" ]]; then
         export CFLAGS="$CFLAGS -march=native -mtune=native"
@@ -130,7 +130,7 @@ build() {
     export CXXFLAGS="$CXXFLAGS -fvisibility-inlines-hidden -Wno-unused-command-line-argument -Wno-error=unused-command-line-argument"
     export CFLAGBACKUP="$CFLAGS"
     export CXXFLAGBACKUP="$CXXFLAGS"
-    export LDFLAGS="$LDFLAGS -Wl,-O3 -Wl,-z,noexecstack -Wl,--strip-all -Wl,--sort-common -Wl,--no-undefined -Wl,-z,now -Wl,-z,relro -Wl,-O3,--as-needed,-z,defs,-z,relro,-z,now,-z,nodlopen,-z,text"
+    export LDFLAGS="$LDFLAGS -Wl,-O3 -Wl,-z,noexecstack -Wl,--strip-all -Wl,--sort-common -Wl,--no-undefined -Wl,-z,now -Wl,-z,relro -Wl,-O3,--as-needed,-z,defs,-z,relro,-z,now,-z,nodlopen,-z,text -Wl,-z,pack-relative-relocs -Wl,-z,shstk -Wl,-z,retpolineplt -Wl,--fatal-warnings,--warn-unresolved-symbols,--no-undefined -Wl,-Bsymbolic-functions"
     export CFLAGS="$CFLAGS -fsanitize=undefined,bounds"
     export CXXFLAGS="$CXXFLAGS -fsanitize=undefined,bounds"
 
@@ -152,18 +152,20 @@ build() {
 
     # Never LTO BoringSSL. Bad things will happen
     POLLY="-Xclang -load -Xclang LLVMPolly.so -mllvm -polly -mllvm -polly-run-dce -mllvm -polly-run-inliner -mllvm -polly-ast-use-context -mllvm -polly-vectorizer=stripmine -mllvm -polly-invariant-load-hoisting"
-    export CFLAGS="$CFLAGS $POLLY -flto -fsanitize=safe-stack -DTCP_FASTOPEN=23 -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3 -fPIE -pie"
+    export CFLAGS="$CFLAGS $POLLY -flto -fsanitize=safe-stack,cfi -DTCP_FASTOPEN=23 -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3 -fPIE -pie"
     export LDFLAGS="$LDFLAGS -flto -Wl,--gc-sections -Wl,-pie"
-    export CXXFLAGS="$CXXFLAGS $POLLY -flto -DTCP_FASTOPEN=23 -fsanitize=safe-stack -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3 -fPIE -pie"
+    export CXXFLAGS="$CXXFLAGS $POLLY -flto -DTCP_FASTOPEN=23 -fsanitize=safe-stack,cfi -O3 -funroll-loops -fdata-sections -ffunction-sections -fstrict-flex-arrays=3 -fPIE -pie"
     export CPPFLAGS="$CPPFLAGS $CXXFLAGS $POLLY"
 
     cd ${srcdir}/${pcrepkgname}-${pcrepkgver}
     sed -i "1a CFLAGS=\"$CFLAGS -fsanitize=undefined,bounds\"" configure
     sed -i "1a CXXFLAGS=\"$CXXFLAGS -fsanitize=undefined,bounds\"" configure
+    sed -i "1a LDFLAGS=\"$LDFLAGS\"" configure
 
     cd ${srcdir}/${zlibpkgname}-${zlibpkgver}
     sed -i "1a CFLAGS=\"$CFLAGS -fsanitize=undefined,bounds\"" configure
     sed -i "1a CXXFLAGS=\"$CXXFLAGS -fsanitize=undefined,bounds\"" configure
+    sed -i "1a LDFLAGS=\"$LDFLAGS\"" configure
 
     export CC="$CC $CFLAGS $CXXFLAGBACKUP"
 
