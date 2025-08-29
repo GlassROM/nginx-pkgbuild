@@ -161,8 +161,6 @@ build() {
     sed -i "1a CFLAGS=\"$CFLAGS -fsanitize=undefined,bounds\"" configure
     sed -i "1a CXXFLAGS=\"$CXXFLAGS -fsanitize=undefined,bounds\"" configure
     sed -i "1a LDFLAGS=\"$LDFLAGS\"" configure
-    cat configure
-    exit 0
 
     cd ${srcdir}/${zlibpkgname}-${zlibpkgver}
     sed -i "1a CFLAGS=\"$CFLAGS -fsanitize=undefined,bounds\"" configure
