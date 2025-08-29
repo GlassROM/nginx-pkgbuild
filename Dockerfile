@@ -3,7 +3,7 @@ FROM ghcr.io/glassrom/os-image-updater:master AS builder
 RUN pacman-key --init && pacman-key --populate archlinux
 
 RUN set -x \
-    && pacman -Syyuu --noconfirm base-devel git
+    && pacman -Syyuu --noconfirm base-devel git clang cmake lld llvm mercurial polly go
 
 #LABEL maintainer=""
 
