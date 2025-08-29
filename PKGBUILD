@@ -20,7 +20,7 @@ pkgname=nginx-mainline
 pkgver=1.29.0
 pkgrel=1
 pcrepkgname=pcre2
-pcrepkgver=10.45
+pcrepkgver=10.46
 pcrepkgrel=1
 zlibpkgname=zlib
 zlibpkgver=1.3.1
@@ -56,7 +56,7 @@ b2sums=('SKIP'
     'SKIP'
     'SKIP'
     'SKIP'
-    '196dfcbf6f096b91cb2b72cd1eab53e42a72435f27224fb02fb846f52939d2ae44f1d3ef6d59c024919be9dc00774e13e1bf3c82bec2acb1ac1cf64d66a721cc'
+    '499d16dc44df9f2d352e3f954f576369cc7a11018e46d96ec24f33ffba6eec55b670fd5437b02a013db1c8f63612ebfaafb87a2d762a1f9c8ba271ef3727f1d5'
     '42d109223801a493de6d52e7343403d7fc3234a6ca816425fe41ac9c18019b01b93841acd28a235e99f2256a6a17f93624e96b2ddb58d588c8190a6bedb82910'
 )
 sha512sums=('97d07f0e6477bbeb2959e9cdd9136e2ed6e6386902c3579ff82a452df88241b628441e6bfa7c14cc40bd6137fb47eb66b001d156bd801a60f7866f9c3098aa1d'
@@ -64,7 +64,7 @@ sha512sums=('97d07f0e6477bbeb2959e9cdd9136e2ed6e6386902c3579ff82a452df88241b6284
     '2f4dfcfa711b8bcbc5918ba635f5e430ef7132e66276261ade62bb1cba016967432c8dce7f84352cb8b07dc7c6b18f09177aa3eb92c8e358b2a106c8ca142fe9'
     'SKIP'
     'd512997f63d9a93c5b111c3a5a0dcd5ad57d378336de48667943fb814c1704a0155f220177fb6940d95342b11f017ad45ddfa5c0cde70c10947303d949ee9794'
-    '02e1b9972c00e3eae7d07ddf0519f19b5291c979fa316453d24fea41adce3e3213f484049091df448765b799b66556901c24a6238fd48a1eef79614319a1c68e'
+    '0adb31a8db7fbe33af3155ffccc117cbf604ac290fbbc5087638497dd7d22ab30b493dad7a0d9d3532980cf56ca76fc992b0e279d8ff641e9f9a31a1e28ef9a8'
     '1e8e70b362d64a233591906a1f50b59001db04ca14aaffad522198b04680be501736e7d536b4191e2f99767e7001ca486cd802362cca2be05d5d409b83ea732d'
 )
 
@@ -161,6 +161,8 @@ build() {
     sed -i "1a CFLAGS=\"$CFLAGS -fsanitize=undefined,bounds\"" configure
     sed -i "1a CXXFLAGS=\"$CXXFLAGS -fsanitize=undefined,bounds\"" configure
     sed -i "1a LDFLAGS=\"$LDFLAGS\"" configure
+    cat configure
+    exit 0
 
     cd ${srcdir}/${zlibpkgname}-${zlibpkgver}
     sed -i "1a CFLAGS=\"$CFLAGS -fsanitize=undefined,bounds\"" configure
