@@ -1,5 +1,7 @@
 FROM ghcr.io/glassrom/os-image-updater:master AS builder
 
+RUN mv /etc/ld.so.preload /etc/ld.so.preload.bak
+
 RUN pacman-key --init && pacman-key --populate archlinux
 
 RUN set -x \
@@ -22,6 +24,8 @@ RUN rm *debug* && mv *.tar.zst nginx.tar.zst
 
 FROM ghcr.io/glassrom/os-image-updater:master
 
+RUN mv /etc/ld.so.preload /etc/ld.so.preload.bak
+
 RUN pacman-key --init && pacman-key --populate archlinux
 
 # create nginx user/group first, to be consistent throughout docker variants
@@ -33,6 +37,8 @@ COPY --from=builder /home/user/nginx/nginx.tar.zst /
 RUN pacman -U /nginx.tar.zst --noconfirm && rm /nginx.tar.zst
 
 RUN rm -rf /etc/pacman.d/gnupg
+
+RUN mv /etc/ld.so.preload.bak /etc/ld.so.preload
 
 RUN yes | pacman -Scc
 
